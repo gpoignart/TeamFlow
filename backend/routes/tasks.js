@@ -3,7 +3,7 @@ const router = express.Router();
 const { db } = require("../db");
 const Task = require("../models/Task");
 // require filters from utils according to project structure
-const { filterTasks } = require("../utils/filters");
+const { filterTasks } = require("../tasks/filter");
 
 // GET /tasks 
 // return the list of tasks the current user can see
