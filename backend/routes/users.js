@@ -2,20 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User'); 
-
-////////////////////////////////////// We have to suppr/comment this part to test the code auth.js of member 1
-//////////////////////////////////////
-// Simulated Middleware Auth (Blocker while waiting for Member 1)
-const authMiddleware = (req, res, next) => {
-    next(); 
-};
-router.use(authMiddleware);
-// End of Simulated Middleware Auth 
-//////////////////////////////////////
-/////////////////////////////////////
+const { authMiddleware } = require("../utils/auth");
 
 // GET /users
-router.get('/', (req, res) => {
+router.get('/', authMiddleware, (req, res) => {
     try {
         const users = User.getAll();
         const safeUsers = users.map(User.toSafeObject);
@@ -25,7 +15,7 @@ router.get('/', (req, res) => {
     }
 });
 
-// POST /users
+// POST /users (doesn't need to be protected for authenticated users)
 router.post('/', async (req, res) => {
     try {
         //username, email, password et role allowed
@@ -44,7 +34,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /users/:id
-router.put('/:id', async (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
     try {
         const updates = req.body;
         delete updates.id; // Security: we prevent the ID from being changed
