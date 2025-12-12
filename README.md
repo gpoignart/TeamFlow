@@ -15,10 +15,9 @@ This repository contains both the **backend** (Node.js + Express + Lowdb) and th
 | Name               | GitHub Account                     | Role |
 |-------------------|----------------------------------|------|
 | Clément Pitrat | ClementPitrat / Clément Pitrat 20250076S | Setup Frontend entrypoint and App. |
-| Hugo Boizet | hugoboizet | Frontend Login page. |
+| Hugo Boizet | hugoboizet | Frontend Login page. Frontend Users page. |
 | Pacal Arnold | | Frontend Dashboard page. |
-| Yanis Gaoui | ultimatoros-hash / Yanis Gaoui 20250073S | Frontend Taskboard page + Backend Task Filters API |
-| Hugo Boizet | hugoboizet | Frontend Users page. |
+| Yanis Gaoui | ultimatoros-hash / Yanis Gaoui 20250073S | Frontend Taskboard page. Backend Task Filters API |
 | Eudes Peyrouny Mazeau | | Frontend Messages page. |
 | Damien Desmons | desmonsdamien03-hue / desmons_damien20250071S | TailwindCSS Styling. |
 | Garance Poignart | gpoignart / GarancePoignart_20250009S | Setup Backend entrypoint, models and database. Backend Messages API. |
@@ -76,8 +75,9 @@ npm start
 - Ensure the backend is running for API calls.
 Start styling the Login and Dashboard pages once their structure is finalized.
 
-This section will be updated as the design progresses.
+## Progress
 
+This section will be updated as the design progresses.
 
 What is left to do:
 - Standardize font and police over all page
