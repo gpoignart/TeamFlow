@@ -2,20 +2,17 @@ const express = require('express');
 const router = express.Router();
 const { db } = require("../db");
 const Task = require("../models/Task");
+const { authMiddleware } = require("../utils/auth");
 
 // GET /tasks 
 // return the list of tasks the current user can see
-router.get("/", async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
     await db.read();
     
-    const userId = req.query.userId || (req.body && req.body.userId); 
+    const userId = req.user.id; // automatically given by the authMiddleware
 
     // Debug log
     console.log("GET /tasks - UserId reçu :", userId);
-
-    if (!userId) {
-        return res.status(400).json({ error: "Need a userId." });
-    }
 
     const tasks = db.data.tasks.filter(t => 
         t.userAllowedIds && t.userAllowedIds.map(String).includes(String(userId))
@@ -25,14 +22,12 @@ router.get("/", async (req, res) => {
 });
 
 // GET /tasks/filter
-router.get("/filter", async (req, res) => {
+router.get("/filter", authMiddleware, async (req, res) => {
     await db.read();
 
-    const { userId, status, assignedTo, search } = req.query;
+    const userId = req.user.id; // automatically given by the authMiddleware
 
-    if (!userId) {
-        return res.status(400).json({ error: "userId is required" });
-    }
+    const { status, assignedTo, search } = req.query;
 
     const tasks = Task.filterTasks({ userId, status, assignedTo, search });
 
@@ -41,7 +36,7 @@ router.get("/filter", async (req, res) => {
 
 // 2. POST /tasks
 // create a new task
-router.post("/", async (req, res) => {
+router.post("/", authMiddleware, async (req, res) => {
     await db.read();
 
     const { title, description, assignedTo, userAllowedIds } = req.body;
@@ -70,7 +65,7 @@ router.post("/", async (req, res) => {
 
 // 3. PUT /tasks/:id
 // update task info by id
-router.put("/:id", async (req, res) => {
+router.put("/:id", authMiddleware, async (req, res) => {
     await db.read();
     const taskId = parseInt(req.params.id);
     const { title, description, status, assignedTo, userAllowedIds } = req.body;
@@ -94,7 +89,7 @@ router.put("/:id", async (req, res) => {
 
 // 4. DELETE /tasks/:id
 // delete a task by id
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authMiddleware, async (req, res) => {
     await db.read();
     const taskId = parseInt(req.params.id);
 
