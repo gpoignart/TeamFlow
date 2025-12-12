@@ -8,11 +8,7 @@ const { authMiddleware } = require("../utils/auth");
 router.get("/", authMiddleware, async (req, res) => {
     await db.read(); // update db object with db.json
 
-    const userId = req.user.id;
-
-    if (!userId) {
-        return res.status(400).json({ error: "Need a userId."}) // error case: no userId
-    }
+    const userId = req.user.id; // automatically given by the authMiddleware
     
     const messages = db.data.messages.filter(m =>
         m.senderId == userId || m.recipientIds.includes(userId)
@@ -27,7 +23,9 @@ router.get("/", authMiddleware, async (req, res) => {
 router.post("/", authMiddleware, async (req, res) => {
     await db.read(); // update db object with db.json
 
-    const userId = req.user.id; const { content, recipientIds } = req.body; // get body from the request, body has to contain "content" and "recipientIds"     
+    const userId = req.user.id; // automatically given by the authMiddleware
+    
+    const { content, recipientIds } = req.body; // get body from the request, body has to contain "content" and "recipientIds"     
 
     if (!content || content.trim() === "") {
         return res.status(400).json({ error: "Message can't be empty." }); // error case: empty message
