@@ -6,10 +6,6 @@
   box-shadow: 0 4px 14px rgba(2,6,23,0.06);
   transition: transform 0.2s, box-shadow 0.2s;
 }
-.task-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(2,6,23,0.1);
-}
 
 .task-card.compact {
   padding: 8px 10px;
