@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { db } = require("../db");
 const Task = require("../models/Task");
-// require filters from utils according to project structure
-const { filterTasks } = require("../tasks/filter");
 
 // GET /tasks 
 // return the list of tasks the current user can see
@@ -36,7 +34,7 @@ router.get("/filter", async (req, res) => {
         return res.status(400).json({ error: "userId is required" });
     }
 
-    const tasks = filterTasks({ userId, status, assignedTo, search });
+    const tasks = Task.filterTasks({ userId, status, assignedTo, search });
 
     res.json(tasks);
 });
