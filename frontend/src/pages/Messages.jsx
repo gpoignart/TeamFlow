@@ -1,136 +1,113 @@
-
-// ----------------------------------------------------------------------------
-// BETA VERSION, NEEDS TO BE VERIFIED AND REWORKED BY MEMBER 12
-// This part was coded to test the whole system.
-// The main.jsx was locally modified to display the Message page as it was not coded yet.
-// ----------------------------------------------------------------------------
-
-// frontend/pages/Messages.jsx
-
 import React, { useState, useEffect, useRef } from 'react';
-import MessageCard from '../components/MessageCard';
-import { getMessages, sendMessage } from '../services/api'; 
-// NOTE: Must ensure 'react-router-dom' is available if redirection is needed
+import { getMessages, sendMessage } from '../services/api';
 
-const Messages = () => {
-    const [messages, setMessages] = useState([]);
-    const [newMessageContent, setNewMessageContent] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const messagesEndRef = useRef(null); // Ref to enable auto-scrolling
+export default function Messages() {
+  const [messages, setMessages] = useState([]);
+  const [text, setText] = useState('');
+  const bottomRef = useRef(null);
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-    // Auto-scrolls the chat area to the bottom (latest message)
-    const scrollToBottom = () => {
-        // Ensures the scroll happens after new messages are rendered
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); 
-    }
+  const fetchChat = async () => {
+    try {
+      const data = await getMessages();
+      // Le backend renvoie du plus récent au plus ancien, on inverse pour l'affichage classique
+      setMessages(data.reverse()); 
+    } catch (err) { console.error(err); }
+  };
 
-    // Function to fetch messages from the API
-    const fetchMessages = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const data = await getMessages();
-            
-            // Member 5's task specifies sorting newest to oldest. 
-            // For a chat UI (bottom-up), we reverse to display oldest on top, newest on bottom.
-            setMessages(data.reverse()); 
-            
-        } catch (err) {
-            console.error('Error fetching messages:', err.message);
-            // Display an error message if the token failed or API is down
-            setError(err.message.includes('Unauthorized') 
-                ? 'Your session has expired. Please log in.' 
-                : 'Could not load messages.'
-            );
-        } finally {
-            setLoading(false);
-        }
-    };
+  useEffect(() => {
+    fetchChat();
+    const interval = setInterval(fetchChat, 3000); // Polling rapide
+    return () => clearInterval(interval);
+  }, []);
 
-    // Handler for sending a new message
-    const handleSendMessage = async (e) => {
-        e.preventDefault();
-        const contentToSend = newMessageContent.trim();
-        if (!contentToSend) return;
+  // Scroll automatique vers le bas à l'arrivée d'un message
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-        setLoading(true); // Disable input while sending
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    await sendMessage(text);
+    setText('');
+    fetchChat();
+  };
 
-        try {
-            // 1. Send via API
-            await sendMessage(contentToSend);
-            
-            // 2. Clear input
-            setNewMessageContent('');
-            
-            // 3. Refresh list to display the new message
-            await fetchMessages(); 
-            
-        } catch (err) {
-            console.error('Error sending message:', err.message);
-            setError('Failed to send message: ' + err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Initial load of messages when the component mounts
-    useEffect(() => {
-        fetchMessages();
-    }, []);
-
-    // Effect to auto-scroll after messages state changes (new message arrives)
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
-
-
-    return (
-        <div className="flex flex-col h-full max-h-screen bg-gray-50 p-6">
-            <h1 className="text-3xl font-extrabold text-indigo-700 mb-4 border-b pb-2">Team Chat</h1>
-
-            {/* Message List Area (scrollable) */}
-            <div className="flex-grow overflow-y-auto p-4 bg-white rounded-lg shadow-xl mb-4 space-y-3">
-                {loading && <p className="text-center text-gray-500">Loading messages...</p>}
-                {error && <p className="text-center text-red-500 font-medium p-2 border border-red-200 rounded-md">{error}</p>}
-                
-                {/* Rendering the messages */}
-                {!loading && messages && messages.length > 0 ? (
-                    messages.map((message) => (
-                        <MessageCard key={message.id || message.createdAt} message={message} />
-                    ))
-                ) : (
-                    !loading && !error && <p className="text-center text-gray-500">No messages yet. Start the conversation!</p>
-                )}
-                <div ref={messagesEndRef} /> {/* Scroll anchor point */}
+  return (
+    // Container principal avec hauteur fixe (hauteur écran - hauteur header ~80px)
+    <div className="h-[calc(100vh-100px)] flex flex-col bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+      
+      {/* En-tête du chat */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 flex items-center justify-between text-white shadow-md z-10">
+        <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
+                💬
             </div>
-
-            {/* Message Submission Form */}
-            <form onSubmit={handleSendMessage} className="flex space-x-3 p-4 bg-white rounded-lg shadow-xl border border-gray-200">
-                <textarea
-                    value={newMessageContent}
-                    onChange={(e) => setNewMessageContent(e.target.value)}
-                    placeholder="Type your message here..."
-                    className="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 resize-none h-14"
-                    rows="1" 
-                    disabled={loading}
-                    // Submit on Enter key press
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            handleSendMessage(e);
-                        }
-                    }}
-                />
-                <button
-                    type="submit"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-150 ease-in-out disabled:bg-gray-400"
-                    disabled={!newMessageContent.trim() || loading}
-                >
-                    {loading ? 'Sending...' : 'Send'}
-                </button>
-            </form>
+            <div>
+                <h2 className="font-bold text-lg">Discussion d'équipe</h2>
+                <p className="text-xs text-blue-100 opacity-90">En ligne</p>
+            </div>
         </div>
-    );
-};
+      </div>
 
-export default Messages;
+      {/* Zone des messages (SCROLLABLE) */}
+      <div className="flex-1 overflow-y-auto p-6 bg-gray-50 space-y-4">
+        {messages.length === 0 && (
+            <div className="text-center text-gray-400 mt-10">
+                <p>Aucun message. Lancez la discussion !</p>
+            </div>
+        )}
+        
+        {messages.map((msg) => {
+          const isMe = msg.senderId === user.id;
+          return (
+            <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+              <div 
+                className={`max-w-[75%] px-5 py-3 rounded-2xl shadow-sm relative group ${
+                  isMe 
+                    ? 'bg-blue-600 text-white rounded-br-none' 
+                    : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none'
+                }`}
+              >
+                {!isMe && (
+                    <span className="text-[10px] font-bold text-blue-500 block mb-1 uppercase tracking-wider">
+                        {msg.sender?.username || 'Utilisateur'}
+                    </span>
+                )}
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                
+                {/* Heure au survol */}
+                <span className={`text-[10px] absolute -bottom-5 w-20 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 ${isMe ? 'text-right right-0' : 'left-0'}`}>
+                   {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+        <div ref={bottomRef} className="h-4" />
+      </div>
+
+      {/* Zone de saisie */}
+      <div className="p-4 bg-white border-t border-gray-100">
+        <form onSubmit={handleSend} className="flex gap-2 items-center bg-gray-100 rounded-full px-2 py-2 border border-transparent focus-within:border-blue-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+          <input
+            className="flex-1 bg-transparent border-none px-4 py-2 text-gray-800 focus:ring-0 placeholder-gray-400 outline-none"
+            placeholder="Écrivez votre message..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <button 
+            type="submit" 
+            disabled={!text.trim()}
+            className="w-10 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50 disabled:scale-100"
+          >
+            <svg className="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}

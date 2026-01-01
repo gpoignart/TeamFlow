@@ -1,106 +1,146 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { getTasks, updateTask } from "../services/api";
+import { getTasks, updateTask, createTask } from "../services/api";
 import TaskCard from "../components/TaskCard";
-import "../styles/tasks.css";
-
-const STATUS_ORDER = ["todo", "in-progress", "done"];
-const STATUS_LABELS = {
-  todo: "To Do",
-  "in-progress": "In Progress",
-  done: "Done",
-};
+import CreateTaskModal from "../components/CreateTaskModal";
+import "../styles/tasks.css"; // Import du fichier CSS coloré
 
 export default function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [assigneeFilter, setAssigneeFilter] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchTasks();
+    loadTasks();
   }, []);
 
-  const fetchTasks = async () => {
-    const data = await getTasks();
-    setTasks(Array.isArray(data) ? data : []);
+  const loadTasks = async () => {
+    try {
+      const data = await getTasks();
+      setTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const assignees = useMemo(() => {
-    const s = new Set();
-    tasks.forEach((t) => t.assignee && s.add(t.assignee));
-    return [...s];
-  }, [tasks]);
-
-  const filtered = useMemo(() => {
-    return tasks.filter((t) => {
-      if (statusFilter && t.status !== statusFilter) return false;
-      if (assigneeFilter && t.assignee !== assigneeFilter) return false;
-      if (q && !`${t.title} ${t.description}`.toLowerCase().includes(q.toLowerCase()))
-        return false;
-      return true;
-    });
-  }, [tasks, q, statusFilter, assigneeFilter]);
-
-  const grouped = useMemo(() => {
-    const m = { todo: [], "in-progress": [], done: [] };
-    filtered.forEach((t) => m[t.status]?.push(t));
-    return m;
-  }, [filtered]);
+  const handleCreate = async (taskData) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    // On assigne la tâche à l'utilisateur courant pour qu'il puisse la voir
+    const newTask = { 
+        ...taskData, 
+        assignedTo: user.username,
+        userAllowedIds: [user.id] 
+    };
+    await createTask(newTask);
+    loadTasks();
+  };
 
   const handleStatusChange = async (task, newStatus) => {
+    // Mise à jour optimiste (immédiate sur l'interface)
     const updated = { ...task, status: newStatus };
-    setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
+    setTasks(prev => prev.map(t => t.id === task.id ? updated : t));
+    
     try {
       await updateTask(updated);
-      fetchTasks();
-    } catch (err) {
-      setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
-      console.error(err);
+    } catch {
+      // Revert en cas d'erreur
+      setTasks(prev => prev.map(t => t.id === task.id ? task : t));
     }
+  };
+
+  // Filtrage
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(t => {
+      if (statusFilter && t.status !== statusFilter) return false;
+      if (q && !t.title.toLowerCase().includes(q.toLowerCase())) return false;
+      return true;
+    });
+  }, [tasks, q, statusFilter]);
+
+  // Groupement par colonne
+  const columns = {
+    todo: filteredTasks.filter(t => t.status === 'todo'),
+    'in-progress': filteredTasks.filter(t => t.status === 'in-progress'),
+    done: filteredTasks.filter(t => t.status === 'done'),
   };
 
   return (
     <div className="tasks-page">
-      <h1 className="tasks-title">Task Board</h1>
-
-      <div className="filters">
-        <input
-          className="search-input"
-          placeholder="🔍 Search..."
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          <option value="">All status</option>
-          <option value="todo">To Do</option>
-          <option value="in-progress">In Progress</option>
-          <option value="done">Done</option>
-        </select>
-        <select value={assigneeFilter} onChange={(e) => setAssigneeFilter(e.target.value)}>
-          <option value="">All assignees</option>
-          {assignees.map((a) => (
-            <option key={a} value={a}>{a}</option>
-          ))}
-        </select>
-        <button className="btn-refresh" onClick={fetchTasks}>Refresh</button>
+      <div className="tasks-header">
+        <h1 className="tasks-title">Tableau de Bord</h1>
       </div>
 
-      <div className="columns-wrap">
-        {STATUS_ORDER.map((status) => (
-          <div key={status} className={`task-column column--${status}`}>
-            <div className="column-header">{STATUS_LABELS[status]}</div>
-            <div className="column-body">
-              {grouped[status].length === 0 ? (
-                <div className="no-tasks">No tasks</div>
-              ) : (
-                grouped[status].map((t) => (
-                  <TaskCard key={t.id} task={t} onStatusChange={handleStatusChange} />
-                ))
-              )}
-            </div>
+      <div className="filters-bar">
+        {/* Recherche */}
+        <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+            <input
+            className="search-input pl-10"
+            placeholder="Rechercher une tâche..."
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            />
+        </div>
+
+        {/* Filtre Statut */}
+        <select 
+            className="filter-select"
+            value={statusFilter} 
+            onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="">Tous les statuts</option>
+          <option value="todo">À faire</option>
+          <option value="in-progress">En cours</option>
+          <option value="done">Terminé</option>
+        </select>
+
+        {/* Bouton Ajouter */}
+        <button className="btn-add-task" onClick={() => setIsModalOpen(true)}>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+          Nouvelle Tâche
+        </button>
+      </div>
+
+      <div className="columns-container">
+        {/* Colonne TO DO */}
+        <div className="task-column col-todo">
+          <div className="column-header">
+            <span>À faire</span>
+            <span className="task-count text-red-600">{columns.todo.length}</span>
           </div>
-        ))}
+          <div className="column-body">
+            {columns.todo.map(t => <TaskCard key={t.id} task={t} onStatusChange={handleStatusChange} />)}
+          </div>
+        </div>
+
+        {/* Colonne IN PROGRESS */}
+        <div className="task-column col-progress">
+          <div className="column-header">
+            <span>En cours</span>
+            <span className="task-count text-yellow-600">{columns['in-progress'].length}</span>
+          </div>
+          <div className="column-body">
+            {columns['in-progress'].map(t => <TaskCard key={t.id} task={t} onStatusChange={handleStatusChange} />)}
+          </div>
+        </div>
+
+        {/* Colonne DONE */}
+        <div className="task-column col-done">
+          <div className="column-header">
+            <span>Terminé</span>
+            <span className="task-count text-green-600">{columns.done.length}</span>
+          </div>
+          <div className="column-body">
+            {columns.done.map(t => <TaskCard key={t.id} task={t} onStatusChange={handleStatusChange} />)}
+          </div>
+        </div>
       </div>
+
+      <CreateTaskModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onCreate={handleCreate} 
+      />
     </div>
   );
 }

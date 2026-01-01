@@ -1,7 +1,6 @@
-//Login Page
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../styles/login.css"; // Import the new styles
 
 const API_BASE_URL = "http://localhost:5000";
 
@@ -27,24 +26,17 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
-    // Validation simple
     if (!formData.username || !formData.password) {
-      setError("Username and password are required.");
+      setError("Please enter both username and password.");
       return;
     }
 
     try {
       setLoading(true);
-
       const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username: formData.username,
-          password: formData.password
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
       });
 
       const data = await res.json();
@@ -53,12 +45,10 @@ export default function Login() {
         throw new Error(data.message || "Login failed.");
       }
 
-      // Stocker le token et l'utilisateur dans le navigateur
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Rediriger vers le Dashboard après connexion
-      navigate("/dashboard");
+      navigate("/"); // Redirect to Dashboard/Home
     } catch (err) {
       setError(err.message || "Error during login.");
     } finally {
@@ -67,62 +57,49 @@ export default function Login() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-[60vh]">
-      <div className="bg-white shadow rounded px-8 py-6 w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4 text-center">TeamFlow Login</h2>
+    <div className="login-page">
+      <div className="login-card">
+        <h1 className="login-title">Welcome Back</h1>
+        <p className="login-subtitle">Enter your credentials to access TeamFlow</p>
 
-        {error && (
-          <p className="mb-3 text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded">
-            {error}
-          </p>
-        )}
+        {error && <div className="error-message">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="username">
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label" htmlFor="username">
               Username
             </label>
             <input
               id="username"
               name="username"
               type="text"
+              className="form-input"
               value={formData.username}
               onChange={handleChange}
-              className="w-full border rounded px-3 py-2 text-sm"
-              placeholder="Enter your username"
+              placeholder="e.g. gpoignart"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="password">
+          <div className="form-group">
+            <label className="form-label" htmlFor="password">
               Password
             </label>
             <input
               id="password"
               name="password"
               type="password"
+              className="form-input"
               value={formData.password}
               onChange={handleChange}
-              className="w-full border rounded px-3 py-2 text-sm"
-              placeholder="Enter your password"
+              placeholder="••••••••"
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-slate-800 text-white py-2 rounded text-sm font-medium hover:bg-slate-900 disabled:opacity-60"
-          >
-            {loading ? "Logging in..." : "Login"}
+          <button type="submit" className="btn-login" disabled={loading}>
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-
-        <p className="mt-4 text-xs text-gray-500 text-center">
-          This page sends your credentials to the backend
-          (POST /auth/login) and stores the JWT token on success.
-        </p>
       </div>
     </div>
   );
 }
-
