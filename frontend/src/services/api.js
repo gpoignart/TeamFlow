@@ -1,31 +1,27 @@
-// frontend/services/api.js
+// frontend/src/services/api.js
 
 import { getAuthToken } from './auth'; 
 
-const API_BASE = (typeof process !== 'undefined' && process.env && process.env.REACT_APP_API_BASE) 
-    ? process.env.REACT_APP_API_BASE 
-    : 'http://localhost:5000';
+const API_BASE = 'http://localhost:5000';
 
 /**
- * Builds headers for authenticated requests (includes JWT).
+ * Helper to add the "Authorization: Bearer <token>" header automatically
  */
 const getAuthHeaders = () => {
     const token = getAuthToken(); 
-    
     const headers = {
         'Content-Type': 'application/json',
     };
 
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
+    } else {
+        console.warn("API Warning: No auth token found in localStorage.");
     }
     
     return headers;
 };
 
-/**
- * Handles API response processing (JSON parsing, error handling).
- */
 async function handleResponse(res) {
   const text = await res.text();
   let data;
@@ -34,35 +30,29 @@ async function handleResponse(res) {
   } catch (e) {
     data = text;
   }
+
   if (!res.ok) {
-    const err = new Error(data && data.message ? data.message : res.statusText || 'API Error');
-    err.status = res.status;
-    err.data = data;
-    throw err;
+    // If error is 401 (Unauthorized), it might mean the token expired.
+    if (res.status === 401) {
+        console.error("Authentication failed. You may need to log in again.");
+    }
+    
+    const errorMsg = (data && data.message) ? data.message : res.statusText;
+    throw new Error(errorMsg);
   }
   return data;
 }
 
-// ====================================================================
-// --- TASK MANAGEMENT FUNCTIONS (UPDATED with AUTH) ---
-// ====================================================================
-
-/**
- * GET /tasks: Fetches tasks.
- */
+// --- TASKS ---
 export async function getTasks() {
   const res = await fetch(`${API_BASE}/tasks`, {
     method: 'GET',
-    headers: getAuthHeaders(),
+    headers: getAuthHeaders(), // <--- This authenticates the request
   });
   return handleResponse(res);
 }
 
-/**
- * PUT /tasks/:id: Updates an existing task.
- */
 export async function updateTask(task) {
-  // Assumes the task object contains the ID
   const res = await fetch(`${API_BASE}/tasks/${task.id}`, { 
     method: 'PUT',
     headers: getAuthHeaders(),
@@ -71,31 +61,60 @@ export async function updateTask(task) {
   return handleResponse(res);
 }
 
-// ====================================================================
-// --- MESSAGE FUNCTIONS (NEW - Member 12) ---
-// ====================================================================
-
 /**
- * GET /messages: Fetches the list of team messages.
+ * POST /tasks: Creates a new task.
  */
+export async function createTask(task) {
+  const res = await fetch(`${API_BASE}/tasks`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(task),
+  });
+  return handleResponse(res);
+}
+
+// --- MESSAGES ---
 export const getMessages = async () => {
-    const response = await fetch(`${API_BASE}/messages`, {
+    const res = await fetch(`${API_BASE}/messages`, {
         method: 'GET',
         headers: getAuthHeaders(),
     });
-
-    return handleResponse(response);
+    return handleResponse(res);
 };
 
-/**
- * POST /messages: Sends a new message.
- */
 export const sendMessage = async (content) => {
-    const response = await fetch(`${API_BASE}/messages`, {
+    const res = await fetch(`${API_BASE}/messages`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ content }),
     });
-
-    return handleResponse(response);
+    return handleResponse(res);
 };
+
+// --- USERS ---
+export const getUsers = async () => {
+    const res = await fetch(`${API_BASE}/users`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return handleResponse(res);
+};
+
+export const updateUser = async (id, data) => {
+    const res = await fetch(`${API_BASE}/users/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+    });
+    return handleResponse(res);
+};
+
+// --- STATS ---
+export const getStats = async () => {
+    const res = await fetch(`${API_BASE}/stats`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return handleResponse(res);
+};
+
