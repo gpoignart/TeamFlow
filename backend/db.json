@@ -1,0 +1,189 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "nikker",
+      "email": "admin@teamflow.com",
+      "password": "$2b$10$LTbU6vDamohbOjnSPi0ro.NFrDUFpa4H5ofqS9EXGx5UXE982pjzO",
+      "role": "admin"
+    }
+  ],
+  "lastUserId": 1,
+  "tasks": [
+    {
+      "id": 1,
+      "title": "zebi",
+      "description": "sss",
+      "status": "todo",
+      "assignedTo": "admin",
+      "userAllowedIds": [
+        1
+      ]
+    }
+  ],
+  "lastTaskId": 1,
+  "messages": [
+    {
+      "id": 1,
+      "content": "hello",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:08:49"
+    },
+    {
+      "id": 2,
+      "content": "hello",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:12:58"
+    },
+    {
+      "id": 3,
+      "content": "hello",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:36:10"
+    },
+    {
+      "id": 4,
+      "content": "nigga",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:36:47"
+    },
+    {
+      "id": 5,
+      "content": "NIGGER",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:44:10"
+    },
+    {
+      "id": 6,
+      "content": "s",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:02"
+    },
+    {
+      "id": 7,
+      "content": "ss",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:02"
+    },
+    {
+      "id": 8,
+      "content": "ss",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:03"
+    },
+    {
+      "id": 9,
+      "content": "ss",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:03"
+    },
+    {
+      "id": 10,
+      "content": "s",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:04"
+    },
+    {
+      "id": 11,
+      "content": "ss",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:05"
+    },
+    {
+      "id": 12,
+      "content": "s",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:05"
+    },
+    {
+      "id": 13,
+      "content": "ss",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:05"
+    },
+    {
+      "id": 14,
+      "content": "s",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:05"
+    },
+    {
+      "id": 15,
+      "content": "s",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:06"
+    },
+    {
+      "id": 16,
+      "content": "q",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:12"
+    },
+    {
+      "id": 17,
+      "content": "q",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:12"
+    },
+    {
+      "id": 18,
+      "content": "s",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:13"
+    },
+    {
+      "id": 19,
+      "content": "q",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:13"
+    },
+    {
+      "id": 20,
+      "content": "q",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:14"
+    },
+    {
+      "id": 21,
+      "content": "qq",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:14"
+    },
+    {
+      "id": 22,
+      "content": "q",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 18:46:15"
+    },
+    {
+      "id": 23,
+      "content": ",",
+      "senderId": 1,
+      "recipientIds": [],
+      "createdAt": "01/01/2026 20:01:56"
+    }
+  ],
+  "lastMessageId": 23
+}
