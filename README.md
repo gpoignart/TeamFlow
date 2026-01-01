@@ -59,7 +59,7 @@ npx nodemon app.js
 ### Frontend Setup
 
 ```bash
-cd ../frontend
+cd frontend
 npm install
 ```
 
@@ -82,5 +82,6 @@ This section will be updated as the design progresses.
 What is left to do:
 - Standardize font and police over all page
 - Redesign the routing system so that we can create a home page, redirecting to all other pages
+- Put the authentication page first
+- Update index.jsx
 - Finish all parts
-- Update index.jsx 
