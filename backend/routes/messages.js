@@ -4,45 +4,61 @@ const { db } = require("../db");
 const Message = require("../models/Message")
 const { authMiddleware } = require("../utils/auth");
 
-// GET /messages (return the list of messages the current user can see, sorted by date)
+// GET /messages 
+// Returns list of messages the current user can see, sorted by date (newest first)
 router.get("/", authMiddleware, async (req, res) => {
     await db.read(); // update db object with db.json
 
-    const userId = req.user.id; // automatically given by the authMiddleware
+    const userId = req.user.id; 
     
+    // Filter: 
+    // 1. User is sender
+    // 2. User is in recipient list
+    // 3. Message has NO recipient list (Global/Public message)
     const messages = db.data.messages.filter(m =>
-        m.senderId == userId || m.recipientIds.includes(userId)
-    ); // get in the database the list of messages the current user can see as a sender or a recipient
+        m.senderId == userId || 
+        (m.recipientIds && m.recipientIds.includes(userId)) ||
+        (!m.recipientIds || m.recipientIds.length === 0)
+    ); 
 
-    messages.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // sort the message from the newer to the older
+    // Sort newest to oldest
+    messages.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); 
 
-    res.json(messages); // response
+    res.json(messages); 
 });
 
 // POST /messages (create a new message)
 router.post("/", authMiddleware, async (req, res) => {
-    await db.read(); // update db object with db.json
+    await db.read(); 
 
-    const userId = req.user.id; // automatically given by the authMiddleware
+    const userId = req.user.id; 
     
-    const { content, recipientIds } = req.body; // get body from the request, body has to contain "content" and "recipientIds"     
+    // RecipientIds is optional now. If missing/empty, it's a public message.
+    const { content, recipientIds } = req.body; 
 
     if (!content || content.trim() === "") {
-        return res.status(400).json({ error: "Message can't be empty." }); // error case: empty message
-    }
-    if (!recipientIds || recipientIds.length === 0) {
-        return res.status(400).json({ error: "Need one or several recipientIds."}) // error case: no recipientIds
+        return res.status(400).json({ error: "Message can't be empty." }); 
     }
 
-    const currentMessageId = db.data.lastMessageId + 1; // Define the message id
+    const currentMessageId = db.data.lastMessageId + 1; 
 
-    const newMessage = new Message({ id: currentMessageId, content: content, senderId: userId, recipientIds: recipientIds }) // create a new message
+    // Ensure recipientIds is an array if provided, otherwise empty array
+    const finalRecipients = (Array.isArray(recipientIds) && recipientIds.length > 0) 
+        ? recipientIds 
+        : [];
 
-    db.data.messages.push(newMessage); // push the new message in the db
-    db.data.lastMessageId = currentMessageId; // update the lastMessageId with the actual id
+    const newMessage = new Message({ 
+        id: currentMessageId, 
+        content: content, 
+        senderId: userId, 
+        recipientIds: finalRecipients 
+    });
 
-    await db.write(); // save the modifications in db.json
-    res.status(201).json(newMessage); // status of a successfull creation + send the newMessage object in response
+    db.data.messages.push(newMessage); 
+    db.data.lastMessageId = currentMessageId; 
+
+    await db.write(); 
+    res.status(201).json(newMessage); 
 })
 
 module.exports = router;
