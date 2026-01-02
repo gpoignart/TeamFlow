@@ -122,7 +122,7 @@ export default function Tasks() {
         {/* Colonne DONE */}
         <div className="task-column col-done">
           <div className="column-header">
-            <span>Dibe</span>
+            <span>Done</span>
             <span className="task-count text-green-600">{columns.done.length}</span>
           </div>
           <div className="column-body">
