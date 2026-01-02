@@ -130,7 +130,7 @@ export default function Login() {
                 : "Signing in..."
               : isRegister
               ? "Register"
-              : "Sign In"}
+              : "Log In"}
           </button>
         </form>
 
@@ -138,7 +138,7 @@ export default function Login() {
           {isRegister ? (
             <p>
               Already have an account?{" "}
-              <button onClick={() => setIsRegister(false)}>Sign In</button>
+              <button onClick={() => setIsRegister(false)}>Log In</button>
             </p>
           ) : (
             <p>
