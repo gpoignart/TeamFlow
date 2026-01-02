@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/login.css"; // Import the new styles
+import "../styles/login.css";
 
 const API_BASE_URL = "http://localhost:5000";
 
@@ -9,10 +9,12 @@ export default function Login() {
 
   const [formData, setFormData] = useState({
     username: "",
+    email: "",
     password: ""
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isRegister, setIsRegister] = useState(false); // toggle login/register
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,14 +28,18 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
-    if (!formData.username || !formData.password) {
-      setError("Please enter both username and password.");
+    if (!formData.username || !formData.password || (isRegister && !formData.email)) {
+      setError("Please fill in all required fields.");
       return;
     }
 
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      const url = isRegister
+        ? `${API_BASE_URL}/auth/register`
+        : `${API_BASE_URL}/auth/login`;
+
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
@@ -42,15 +48,16 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "Login failed.");
+        throw new Error(data.message || (isRegister ? "Registration failed." : "Login failed."));
       }
 
+      // Save token + user
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
       navigate("/"); // Redirect to Dashboard/Home
     } catch (err) {
-      setError(err.message || "Error during login.");
+      setError(err.message || "Error during authentication.");
     } finally {
       setLoading(false);
     }
@@ -59,8 +66,12 @@ export default function Login() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <h1 className="login-title">Welcome Back</h1>
-        <p className="login-subtitle">Enter your credentials to access TeamFlow</p>
+        <h1 className="login-title">{isRegister ? "Create Account" : "Welcome Back"}</h1>
+        <p className="login-subtitle">
+          {isRegister
+            ? "Fill in your details to register"
+            : "Enter your credentials to access TeamFlow"}
+        </p>
 
         {error && <div className="error-message">{error}</div>}
 
@@ -80,6 +91,23 @@ export default function Login() {
             />
           </div>
 
+          {isRegister && (
+            <div className="form-group">
+              <label className="form-label" htmlFor="email">
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                className="form-input"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="e.g. example@mail.com"
+              />
+            </div>
+          )}
+
           <div className="form-group">
             <label className="form-label" htmlFor="password">
               Password
@@ -96,9 +124,29 @@ export default function Login() {
           </div>
 
           <button type="submit" className="btn-login" disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
+            {loading
+              ? isRegister
+                ? "Registering..."
+                : "Signing in..."
+              : isRegister
+              ? "Register"
+              : "Sign In"}
           </button>
         </form>
+
+        <div className="toggle-auth">
+          {isRegister ? (
+            <p>
+              Already have an account?{" "}
+              <button onClick={() => setIsRegister(false)}>Sign In</button>
+            </p>
+          ) : (
+            <p>
+              Don't have an account?{" "}
+              <button onClick={() => setIsRegister(true)}>Register</button>
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

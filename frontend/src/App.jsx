@@ -79,12 +79,15 @@ function AppLayout({ children }) {
                 <p className="text-sm font-semibold text-gray-800">{user.username || 'User'}</p>
                 <p className="text-xs text-gray-500 capitalize">{user.role || 'Member'}</p>
               </div>
-              <button 
+              <button
                 onClick={handleLogout}
-                className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 hover:from-red-100 hover:to-red-200 flex items-center justify-center text-gray-600 hover:text-red-600 transition-colors border border-gray-200"
+                className="w-auto px-3 h-9 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 hover:from-red-100 hover:to-red-200 flex items-center justify-center text-gray-600 hover:text-red-600 transition-colors border border-gray-200 gap-2"
                 title="Logout"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                <span>Logout</span>
               </button>
             </div>
           </div>

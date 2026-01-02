@@ -10,6 +10,37 @@ const { generateToken } = require('../utils/auth'); // Token generator
 const User = require('../models/User'); // User model for toSafeObject method
 
 /**
+ * Route POST /auth/register
+ * Create a new user and return a token
+ */
+router.post('/register', async (req, res) => {
+    const { username, email, password, role } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ message: 'Username and password are required.' });
+    }
+
+    try {
+        const newUser = await User.create({ username, email, password, role });
+
+        const token = generateToken(newUser);
+
+        const safeUser = User.toSafeObject(newUser);
+
+        res.status(201).json({
+            message: 'User registered successfully',
+            user: safeUser,
+            token
+        });
+        
+    } catch (err) {
+        console.error('Error during registration:', err.message);
+        res.status(400).json({ message: err.message });
+    }
+});
+
+
+/**
  * Route POST /auth/login
  * Authenticates the user and returns a JWT.
  */
