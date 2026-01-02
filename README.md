@@ -74,14 +74,3 @@ npm start
 - React app runs on \`http://localhost:3000\`.  
 - Ensure the backend is running for API calls.
 Start styling the Login and Dashboard pages once their structure is finalized.
-
-## Progress
-
-This section will be updated as the design progresses.
-
-What is left to do:
-- Standardize font and police over all page
-- Redesign the routing system so that we can create a home page, redirecting to all other pages
-- Put the authentication page first
-- Update index.jsx
-- Finish all parts
