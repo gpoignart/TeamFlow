@@ -145,7 +145,7 @@ export default function Dashboard() {
       {/* Hero Section */}
       <div className={`flex flex-col md:flex-row md:items-end justify-between gap-4 animate-slide-up delay-0`}>
         <div>
-          <h1 className={`text-4xl font-extrabold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+          <h1 className={`mt-6 text-4xl font-extrabold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             {greeting}, <span className="text-gradient">{user?.username || "Guest"}</span>
           </h1>
           <p className={`mt-2 text-lg ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>

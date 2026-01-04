@@ -1,1 +1,26 @@
-
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "epeyrounymaz",
+      "email": "eudes.peyrouny@gmail.com",
+      "password": "$2b$10$PUCt0muqtIK21uKEE9NV/uE2OhwzACaw0OmdiL9hpe.fxUmqs1u1e",
+      "role": "member",
+      "avatar": "https://ui-avatars.com/api/?name=epeyrounymaz&background=random"
+    }
+  ],
+  "lastUserId": 1,
+  "tasks": [],
+  "lastTaskId": 1,
+  "messages": [
+    {
+      "id": 1,
+      "content": "salut",
+      "senderId": 1,
+      "recipientIds": [],
+      "teamId": 1767546761454,
+      "createdAt": "05/01/2026 00:12:48"
+    }
+  ],
+  "lastMessageId": 1
+}

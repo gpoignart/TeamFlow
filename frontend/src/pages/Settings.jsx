@@ -132,7 +132,7 @@ export default function Settings() {
     <div className={`page-container space-y-6 transition-colors duration-300 ${preferences.darkMode ? 'dark bg-gray-900' : 'bg-white'}`}>
       {/* Header */}
       <div className="animate-slide-up delay-0">
-        <h1 className={`page-title ${preferences.darkMode ? 'text-white' : ''}`}>Settings</h1>
+        <h1 className={`mt-6 page-title ${preferences.darkMode ? 'text-white' : 'text-gray-900'}`}> Settings</h1>
         <p className={`mt-2 ${preferences.darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Manage your account and preferences</p>
       </div>
 

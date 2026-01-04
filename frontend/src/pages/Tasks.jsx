@@ -132,7 +132,7 @@ export default function Tasks() {
   return (
     <div className="tasks-page">
       <div className="tasks-header">
-        <h1 className={`tasks-title ${darkMode ? 'text-white' : ''}`}>Task board</h1>
+        <h1 className={`mt-6 tasks-title ${darkMode ? 'text-white' : ''}`}>Task board</h1>
         <div className="mt-2">
           <label className={`mr-2 font-semibold ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Team:</label>
           <select
@@ -147,7 +147,7 @@ export default function Tasks() {
         </div>
       </div>
 
-      <div className="filters-bar">
+      <div className={`filters-bar ${darkMode ? 'dark-mode' : ''}`}>
         <div className="relative">
             <span className={`absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>🔍</span>
             <input

@@ -4,7 +4,7 @@
   --muted: #6b7280;
   --card-bg: #ffffff;
 
-  /* Couleurs originales du GitHub */
+  /* Originals colors from the github */
   --todo-bg: #ffe8e8;
   --todo-border: #ff6b6b;
   
@@ -27,9 +27,9 @@
   @apply text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2;
 }
 
-/* Barre d'outils et Filtres */
+/* Toolbar and filters */
 .filters-bar {
-  @apply flex flex-col sm:flex-row gap-3 items-center mb-6;
+  @apply flex flex-col sm:flex-row gap-3 items-center mb-6 ;
   display: flex;
   gap: 12px;
   background: white;
@@ -38,6 +38,10 @@
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
   margin-bottom: 20px;
   align-items: center;
+}
+
+.filters-bar.dark-mode {
+  background: #293544;  
 }
 
 .search-input {
@@ -76,7 +80,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-  margin-left: auto; /* Pousse le bouton à droite */
+  margin-left: auto; 
   display: flex;
   align-items: center;
   gap: 8px;
@@ -87,7 +91,7 @@
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-/* Colonnes Kanban */
+/* Columns Kanban */
 .columns-container {
   @apply grid grid-cols-1 md:grid-cols-3 gap-6;
   display: flex;
@@ -116,7 +120,7 @@
   @apply ring-2 ring-blue-400 ring-offset-2 dark:ring-offset-gray-900 scale-105;
 }
 
-/* Couleurs spécifiques aux colonnes */
+/* Specific colors for columns */
 .col-red {
   @apply bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800/60;
 }
@@ -150,6 +154,7 @@
   font-weight: 700;
   color: #374151;
   font-size: 1.1rem;
+  border-radius: 20px;
 }
 
 .task-count {
@@ -171,7 +176,7 @@
   gap: 12px;
 }
 
-/* Scrollbar fine pour les colonnes */
+/* Scrollbar good for the columns */
 .column-body::-webkit-scrollbar {
   width: 6px;
 }
