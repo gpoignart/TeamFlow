@@ -65,7 +65,7 @@ export default function Login() {
 
   return (
     <div className="login-page">
-      <div className="login-card">
+      <div className="login-card animate-bounce-in">
         <h1 className="login-title">{isRegister ? "Create Account" : "Welcome Back"}</h1>
         <p className="login-subtitle">
           {isRegister
@@ -73,10 +73,10 @@ export default function Login() {
             : "Enter your credentials to access TeamFlow"}
         </p>
 
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-message animate-slide-in-left">{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
+          <div className="form-group animate-slide-up delay-100">
             <label className="form-label" htmlFor="username">
               Username
             </label>
@@ -84,7 +84,7 @@ export default function Login() {
               id="username"
               name="username"
               type="text"
-              className="form-input"
+              className="form-input transition-smooth"
               value={formData.username}
               onChange={handleChange}
               placeholder="e.g. gpoignart"
@@ -92,7 +92,7 @@ export default function Login() {
           </div>
 
           {isRegister && (
-            <div className="form-group">
+            <div className="form-group animate-slide-up delay-150">
               <label className="form-label" htmlFor="email">
                 Email
               </label>
@@ -100,7 +100,7 @@ export default function Login() {
                 id="email"
                 name="email"
                 type="email"
-                className="form-input"
+                className="form-input transition-smooth"
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="e.g. example@mail.com"
@@ -108,7 +108,7 @@ export default function Login() {
             </div>
           )}
 
-          <div className="form-group">
+          <div className="form-group animate-slide-up delay-200">
             <label className="form-label" htmlFor="password">
               Password
             </label>
@@ -116,14 +116,14 @@ export default function Login() {
               id="password"
               name="password"
               type="password"
-              className="form-input"
+              className="form-input transition-smooth"
               value={formData.password}
               onChange={handleChange}
               placeholder="••••••••"
             />
           </div>
 
-          <button type="submit" className="btn-login" disabled={loading}>
+          <button type="submit" className="btn-login animate-slide-up delay-250 transition-smooth" disabled={loading}>
             {loading
               ? isRegister
                 ? "Registering..."
@@ -134,16 +134,16 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="toggle-auth">
+        <div className="toggle-auth animate-slide-up delay-300">
           {isRegister ? (
             <p>
               Already have an account?{" "}
-              <button onClick={() => setIsRegister(false)}>Log In</button>
+              <button onClick={() => setIsRegister(false)} className="transition-smooth hover:scale-105">Log In</button>
             </p>
           ) : (
             <p>
               Don't have an account?{" "}
-              <button onClick={() => setIsRegister(true)}>Register</button>
+              <button onClick={() => setIsRegister(true)} className="transition-smooth hover:scale-105">Register</button>
             </p>
           )}
         </div>
