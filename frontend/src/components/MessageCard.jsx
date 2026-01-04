@@ -1,11 +1,6 @@
-// ----------------------------------------------------------------------------
-// BETA VERSION, NEEDS TO BE VERIFIED AND REWORKED BY MEMBER 12
-// This part was coded to test the whole system.
-// ----------------------------------------------------------------------------
-
 import React from 'react';
 
-/**
+/*
  * Component to display an individual chat message.
  * Uses TailwindCSS for clean styling.
  */
