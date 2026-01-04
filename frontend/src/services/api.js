@@ -1,120 +1,63 @@
 // frontend/src/services/api.js
 
-import { getAuthToken } from './auth'; 
+const API_BASE_URL = "http://localhost:5000";
 
-const API_BASE = 'http://localhost:5000';
+const getToken = () => localStorage.getItem("token");
 
-/**
- * Helper to add the "Authorization: Bearer <token>" header automatically
- */
-const getAuthHeaders = () => {
-    const token = getAuthToken(); 
-    const headers = {
-        'Content-Type': 'application/json',
-    };
+const api = async (endpoint, options = {}) => {
+  const headers = {
+    "Content-Type": "application/json",
+    ...options.headers,
+  };
 
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    } else {
-        console.warn("API Warning: No auth token found in localStorage.");
-    }
-    
-    return headers;
-};
-
-async function handleResponse(res) {
-  const text = await res.text();
-  let data;
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch (e) {
-    data = text;
+  if (getToken()) {
+    headers["Authorization"] = `Bearer ${getToken()}`;
   }
 
-  if (!res.ok) {
-    // If error is 401 (Unauthorized), it might mean the token expired.
-    if (res.status === 401) {
-        console.error("Authentication failed. You may need to log in again.");
-    }
-    
-    const errorMsg = (data && data.message) ? data.message : res.statusText;
-    throw new Error(errorMsg);
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error(`API Error: ${response.statusText}`);
   }
-  return data;
-}
 
-// --- TASKS ---
-export async function getTasks() {
-  const res = await fetch(`${API_BASE}/tasks`, {
-    method: 'GET',
-    headers: getAuthHeaders(), // <--- This authenticates the request
-  });
-  return handleResponse(res);
-}
-
-export async function updateTask(task) {
-  const res = await fetch(`${API_BASE}/tasks/${task.id}`, { 
-    method: 'PUT',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(task),
-  });
-  return handleResponse(res);
-}
-
-/**
- * POST /tasks: Creates a new task.
- */
-export async function createTask(task) {
-  const res = await fetch(`${API_BASE}/tasks`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(task),
-  });
-  return handleResponse(res);
-}
-
-// --- MESSAGES ---
-export const getMessages = async () => {
-    const res = await fetch(`${API_BASE}/messages`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-    });
-    return handleResponse(res);
+  return response.json();
 };
 
-export const sendMessage = async (content) => {
-    const res = await fetch(`${API_BASE}/messages`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ content }),
-    });
-    return handleResponse(res);
-};
+// Auth
+export const login = (credentials) =>
+  api("/auth/login", { method: "POST", body: JSON.stringify(credentials) });
 
-// --- USERS ---
-export const getUsers = async () => {
-    const res = await fetch(`${API_BASE}/users`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-    });
-    return handleResponse(res);
-};
+export const register = (data) =>
+  api("/auth/register", { method: "POST", body: JSON.stringify(data) });
 
-export const updateUser = async (id, data) => {
-    const res = await fetch(`${API_BASE}/users/${id}`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(data),
-    });
-    return handleResponse(res);
-};
+// Stats
+export const getStats = () => api("/stats");
 
-// --- STATS ---
-export const getStats = async () => {
-    const res = await fetch(`${API_BASE}/stats`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-    });
-    return handleResponse(res);
-};
+// Tasks
+export const getTasks = () => api("/tasks");
+
+export const createTask = (taskData) =>
+  api("/tasks", { method: "POST", body: JSON.stringify(taskData) });
+
+export const updateTask = (task) =>
+  api(`/tasks/${task.id}`, { method: "PUT", body: JSON.stringify(task) });
+
+export const deleteTask = (taskId) =>
+  api(`/tasks/${taskId}`, { method: "DELETE" });
+
+// Users
+export const getUsers = () => api("/users");
+
+export const updateUser = (userId, userData) =>
+  api(`/users/${userId}`, { method: "PUT", body: JSON.stringify(userData) });
+
+// Messages
+export const getMessages = (teamId) =>
+  api(`/messages${teamId ? `?teamId=${encodeURIComponent(teamId)}` : ""}`);
+
+export const sendMessage = (content, teamId) =>
+  api("/messages", { method: "POST", body: JSON.stringify({ content, teamId }) });
 
