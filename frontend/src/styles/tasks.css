@@ -45,7 +45,7 @@
 }
 
 .search-input {
-  @apply flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:bg-gray-700 dark:text-white dark:placeholder-gray-400;
+  @apply flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all;
   padding: 10px 16px;
   border-radius: 10px;
   border: 1px solid #e5e7eb;
@@ -204,4 +204,5 @@
 
 .task-column:hover {
   @apply shadow-md;
+
 }
