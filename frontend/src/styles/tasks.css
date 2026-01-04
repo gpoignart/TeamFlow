@@ -16,29 +16,20 @@
 }
 
 .tasks-page {
-  padding: 2rem;
-  height: calc(100vh - 80px); /* Prend toute la hauteur moins le header */
-  display: flex;
-  flex-direction: column;
-  background: var(--bg);
+  @apply w-full space-y-6;
 }
 
 .tasks-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
+  @apply mb-8;
 }
 
 .tasks-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text);
-  font-family: 'Poppins', sans-serif;
+  @apply text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2;
 }
 
 /* Barre d'outils et Filtres */
 .filters-bar {
+  @apply flex flex-col sm:flex-row gap-3 items-center mb-6;
   display: flex;
   gap: 12px;
   background: white;
@@ -50,6 +41,7 @@
 }
 
 .search-input {
+  @apply flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:bg-gray-700 dark:text-white dark:placeholder-gray-400;
   padding: 10px 16px;
   border-radius: 10px;
   border: 1px solid #e5e7eb;
@@ -65,6 +57,7 @@
 }
 
 .filter-select {
+  @apply px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white transition-all;
   padding: 10px 14px;
   border-radius: 10px;
   border: 1px solid #e5e7eb;
@@ -74,6 +67,7 @@
 }
 
 .btn-add-task {
+  @apply flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all font-semibold;
   background: #2563eb;
   color: white;
   border: none;
@@ -95,6 +89,7 @@
 
 /* Colonnes Kanban */
 .columns-container {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-6;
   display: flex;
   gap: 24px;
   flex: 1;
@@ -103,6 +98,7 @@
 }
 
 .task-column {
+  @apply rounded-xl border flex flex-col min-h-[500px] transition-all duration-300;
   flex: 1;
   min-width: 300px;
   background: #ffffff;
@@ -115,21 +111,38 @@
   transition: transform 0.2s;
 }
 
+/* Drag over state */
+.task-column.drag-over {
+  @apply ring-2 ring-blue-400 ring-offset-2 dark:ring-offset-gray-900 scale-105;
+}
+
 /* Couleurs spécifiques aux colonnes */
-.col-todo {
-  background: linear-gradient(to bottom, var(--todo-bg) 0%, #ffffff 150px);
-  border-top-color: var(--todo-border);
+.col-red {
+  @apply bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800/60;
 }
-.col-progress {
-  background: linear-gradient(to bottom, var(--progress-bg) 0%, #ffffff 150px);
-  border-top-color: var(--progress-border);
+
+.col-red .column-header {
+  @apply bg-red-100 dark:bg-red-900/50 text-red-900 dark:text-red-100 border-red-200 dark:border-red-800;
 }
-.col-done {
-  background: linear-gradient(to bottom, var(--done-bg) 0%, #ffffff 150px);
-  border-top-color: var(--done-border);
+
+.col-yellow {
+  @apply bg-yellow-50 dark:bg-yellow-950/40 border-yellow-200 dark:border-yellow-800/60;
+}
+
+.col-yellow .column-header {
+  @apply bg-yellow-100 dark:bg-yellow-900/50 text-yellow-900 dark:text-yellow-100 border-yellow-200 dark:border-yellow-800;
+}
+
+.col-green {
+  @apply bg-green-50 dark:bg-green-950/40 border-green-200 dark:border-green-800/60;
+}
+
+.col-green .column-header {
+  @apply bg-green-100 dark:bg-green-900/50 text-green-900 dark:text-green-100 border-green-200 dark:border-green-800;
 }
 
 .column-header {
+  @apply flex items-center justify-between p-4 border-b font-bold transition-colors duration-300;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -140,6 +153,7 @@
 }
 
 .task-count {
+  @apply font-bold text-sm;
   background: rgba(255,255,255,0.6);
   padding: 4px 12px;
   border-radius: 20px;
@@ -148,6 +162,7 @@
 }
 
 .column-body {
+  @apply flex-1 p-4 space-y-3 overflow-y-auto;
   flex: 1;
   overflow-y: auto;
   padding-right: 4px;
@@ -163,4 +178,25 @@
 .column-body::-webkit-scrollbar-thumb {
   background-color: #e5e7eb;
   border-radius: 10px;
+}
+
+.col-todo .column-header {
+  @apply bg-red-50 dark:bg-red-900/30 text-gray-800 dark:text-white;
+}
+
+.col-progress .column-header {
+  @apply bg-yellow-50 dark:bg-yellow-900/30 text-gray-800 dark:text-white;
+}
+
+.col-done .column-header {
+  @apply bg-green-50 dark:bg-green-900/30 text-gray-800 dark:text-white;
+}
+
+/* Drag and drop feedback */
+.task-column {
+  @apply transition-all duration-200;
+}
+
+.task-column:hover {
+  @apply shadow-md;
 }
