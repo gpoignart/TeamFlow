@@ -1,19 +1,18 @@
-// backend/models/User.js
 const { db } = require('../db');
 const bcrypt = require('bcryptjs');
 
 class User {
-
   constructor(data) {
     this.id = data.id;
-    this.username = data.username; // Essential for login
-    this.email = data.email;       // From base model
-    this.password = data.password; // Will be hashed
-    this.role = data.role || 'member'; // 'admin' or 'member'
+    this.username = data.username;
+    this.email = data.email;
+    this.password = data.password;
+    this.role = data.role || 'member';
+    // New: Avatar URL (can be a link to an image)
+    this.avatar = data.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.username)}&background=random`;
   }
 
   static getAll() {
-    // Safety check to ensure DB is loaded
     return db.data ? db.data.users : [];
   }
 
@@ -24,31 +23,28 @@ class User {
 
   static async create(data) {
     const users = this.getAll();
+    
+    // Basic Validation
+    if (!data.username || data.username.length < 3) throw new Error("Username must be at least 3 chars.");
+    if (!data.password || data.password.length < 6) throw new Error("Password must be at least 6 chars.");
 
-    // Check for duplicates (username OR email)
     const exists = users.find(u => u.username === data.username || (data.email && u.email === data.email));
-    if (exists) {
-      throw new Error("Username or email already in use."); // Error message
-    }
+    if (exists) throw new Error("Username or email already in use.");
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(data.password, 10);
-
-    // ID management via lastUserId
     db.data.lastUserId++;
     
     const newUser = new User({
-      id: db.data.lastUserId, // Use the global counter
+      id: db.data.lastUserId,
       username: data.username,
       email: data.email,
       password: hashedPassword,
-      role: data.role
+      role: data.role,
+      avatar: data.avatar // Allow setting it initially
     });
 
-    // Add to list and save to disk
     users.push(newUser);
     await db.write();
-
     return newUser;
   }
 
@@ -59,24 +55,20 @@ class User {
 
     if (userIndex === -1) return null;
 
-    // If password is being updated, re-hash it
     if (updates.password) {
       updates.password = await bcrypt.hash(updates.password, 10);
     }
 
-    // Update object in memory
     const updatedUser = { ...users[userIndex], ...updates };
+    // Ensure the User class structure is kept
     users[userIndex] = updatedUser;
 
-    // Save to disk
     await db.write();
-
     return new User(updatedUser);
   }
 
   static toSafeObject(user) {
     if (!user) return null;
-    // Remove password before sending to frontend
     const { password, ...safeUser } = user;
     return safeUser;
   }
