@@ -132,7 +132,7 @@ export default function Team() {
       {/* Header */}
       <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 animate-slide-up`}>
         <div>
-          <h1 className={`text-3xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+          <h1 className={`mt-6 text-3xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             My Teams
           </h1>
           <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>

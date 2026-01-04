@@ -132,7 +132,7 @@ export default function Tasks() {
   return (
     <div className="tasks-page">
       <div className="tasks-header">
-        <h1 className={`mt-6 tasks-title ${darkMode ? 'text-white' : ''}`}>Task board</h1>
+        <h1 className={`mt-6 tasks-title ${darkMode ? 'text-white' : 'text-black'}`}>Task board</h1>
         <div className="mt-2">
           <label className={`mr-2 font-semibold ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Team:</label>
           <select

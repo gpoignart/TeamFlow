@@ -54,7 +54,7 @@ export default function Users() {
   return (
     <div className="page-container">
       <div className="mb-8">
-        <h1 className={`page-title ${darkMode ? 'text-white' : ''}`}>Team Members</h1>
+        <h1 className={`mt-6 page-title ${darkMode ? 'text-white' : 'text-black'}`}>Team Members</h1>
         <p className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Manage user roles and access within your teams.</p>
       </div>
 

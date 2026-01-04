@@ -10,8 +10,23 @@
     }
   ],
   "lastUserId": 1,
-  "tasks": [],
-  "lastTaskId": 1,
+  "tasks": [
+    {
+      "id": 2,
+      "title": "my work to do",
+      "description": "do it now",
+      "status": "in-progress",
+      "assignedTo": "epeyrounymaz",
+      "userAllowedIds": [
+        "1"
+      ],
+      "priority": "high",
+      "dueDate": null,
+      "subtasks": [],
+      "teamId": 1767546761454
+    }
+  ],
+  "lastTaskId": 2,
   "messages": [
     {
       "id": 1,
@@ -20,7 +35,15 @@
       "recipientIds": [],
       "teamId": 1767546761454,
       "createdAt": "05/01/2026 00:12:48"
+    },
+    {
+      "id": 2,
+      "content": "hello !",
+      "senderId": 1,
+      "recipientIds": [],
+      "teamId": 1767549604488,
+      "createdAt": "05/01/2026 01:07:32"
     }
   ],
-  "lastMessageId": 1
+  "lastMessageId": 2
 }
