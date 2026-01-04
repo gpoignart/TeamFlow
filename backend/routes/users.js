@@ -42,7 +42,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
         const updatedUser = await User.update(req.params.id, updates);
         
         if (!updatedUser) {
-            return res.status(404).json({ message: "User not find" });
+            return res.status(404).json({ message: "User not found" });
         }
         res.json(User.toSafeObject(updatedUser));
     } catch (err) {
