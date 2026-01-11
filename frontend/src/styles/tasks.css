@@ -50,6 +50,7 @@
   border-radius: 10px;
   border: 1px solid #e5e7eb;
   background: #f9fafb;
+  color: #0f1724;
   min-width: 250px;
   outline: none;
   transition: all 0.2s;
@@ -58,6 +59,21 @@
   border-color: #2684ff;
   background: white;
   box-shadow: 0 0 0 3px rgba(38, 132, 255, 0.1);
+}
+
+/* Dark mode for search input */
+.filters-bar.dark-mode .search-input {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f9fafb;
+}
+.filters-bar.dark-mode .search-input:focus {
+  background: #111827;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+.filters-bar.dark-mode .search-input::placeholder {
+  color: #6b7280;
 }
 
 .filter-select {
