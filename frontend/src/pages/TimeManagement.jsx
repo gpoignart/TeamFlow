@@ -17,6 +17,30 @@ export default function TimeManagement() {
       setDarkMode(JSON.parse(savedPreferences).darkMode);
     }
     loadTasks();
+    
+    // Écouter les événements de changement de team pour recharger les tasks
+    const handleTeamChange = () => {
+      console.log('Team change detected, reloading tasks...');
+      loadTasks();
+    };
+    
+    window.addEventListener('teamUpdated', handleTeamChange);
+    window.addEventListener('teamJoined', handleTeamChange);
+    window.addEventListener('teamCreated', handleTeamChange);
+    window.addEventListener('teamDeleted', handleTeamChange);
+    window.addEventListener('taskDeleted', handleTeamChange);
+    window.addEventListener('taskUpdated', handleTeamChange);
+    window.addEventListener('taskCreated', handleTeamChange);
+    
+    return () => {
+      window.removeEventListener('teamUpdated', handleTeamChange);
+      window.removeEventListener('teamJoined', handleTeamChange);
+      window.removeEventListener('teamCreated', handleTeamChange);
+      window.removeEventListener('teamDeleted', handleTeamChange);
+      window.removeEventListener('taskDeleted', handleTeamChange);
+      window.removeEventListener('taskUpdated', handleTeamChange);
+      window.removeEventListener('taskCreated', handleTeamChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -25,45 +49,30 @@ export default function TimeManagement() {
 
   const loadTasks = async () => {
     try {
-      // Get current user
-      const user = JSON.parse(localStorage.getItem('user'));
-      
-      // Load teams where user is owner or member
-      const allTeams = JSON.parse(localStorage.getItem('teams') || '[]');
-      const userTeams = allTeams.filter(
-        t => t.owner === user.id || (t.members || []).some(m => m.email === user.email)
-      );
-      const teamIds = userTeams.map(t => String(t.id));
-      
-      // Try to get tasks from API
+      // Try to get tasks from API - backend already filters by user's teams
       let allTasks = [];
       try {
         const data = await getTasks();
+        console.log('Tasks loaded from API:', data);
         allTasks = Array.isArray(data) ? data : [];
       } catch (apiError) {
+        console.error('Error loading tasks from API:', apiError);
         // Fallback to localStorage if API fails
+        const user = JSON.parse(localStorage.getItem('user'));
         const storedTasks = localStorage.getItem('tasks');
         if (storedTasks) {
-          allTasks = JSON.parse(storedTasks);
+          const tasks = JSON.parse(storedTasks);
+          // Filter by userAllowedIds when using localStorage
+          allTasks = tasks.filter(task => 
+            Array.isArray(task.userAllowedIds) && 
+            task.userAllowedIds.some(id => String(id) === String(user.id))
+          );
         }
       }
       
-      // Filter tasks that the user has access to AND belong to existing teams
-      const userTasks = allTasks.filter(task => {
-        // Check if task has valid user access
-        if (!task.userAllowedIds || !Array.isArray(task.userAllowedIds)) {
-          return false;
-        }
-        const hasUserAccess = task.userAllowedIds.some(id => String(id) === String(user.id));
-        
-        // Check if task's team still exists
-        const teamExists = task.teamId ? teamIds.includes(String(task.teamId)) : true;
-        
-        return hasUserAccess && teamExists;
-      });
-      
       // Only keep tasks with due dates for this page
-      const tasksWithDates = userTasks.filter(t => t.dueDate);
+      const tasksWithDates = allTasks.filter(t => t.dueDate);
+      console.log('Tasks with dates for calendar:', tasksWithDates);
       setTasks(tasksWithDates);
     } catch (e) {
       console.error('Error loading tasks:', e);
