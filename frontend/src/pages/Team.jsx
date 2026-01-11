@@ -14,6 +14,7 @@ export default function Team() {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("my-teams");
+  const [allUsers, setAllUsers] = useState([]);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const [teamForm, setTeamForm] = useState({
@@ -24,10 +25,11 @@ export default function Team() {
     website: ""
   });
 
-  const [members, setMembers] = useState([{ email: "", role: "member" }]);
+  const [members, setMembers] = useState([{ email: "" }]);
   const [joinCode, setJoinCode] = useState("");
   const [joinError, setJoinError] = useState("");
   const [createdTeamCode, setCreatedTeamCode] = useState("");
+  const [viewingTeam, setViewingTeam] = useState(null);
 
   useEffect(() => {
     const savedPreferences = localStorage.getItem("preferences");
@@ -35,7 +37,18 @@ export default function Team() {
       setDarkMode(JSON.parse(savedPreferences).darkMode);
     }
     loadTeams();
+    loadUsers();
   }, []);
+
+  const loadUsers = async () => {
+    try {
+      const { getUsers } = await import('../services/api');
+      const users = await getUsers();
+      setAllUsers(users);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+  };
 
   const loadTeams = () => {
     const savedTeams = JSON.parse(localStorage.getItem("teams") || "[]");
@@ -54,7 +67,7 @@ export default function Team() {
   };
 
   const addMember = () => {
-    setMembers([...members, { email: "", role: "member" }]);
+    setMembers([...members, { email: "" }]);
   };
 
   const removeMember = (index) => {
@@ -84,7 +97,7 @@ export default function Team() {
 
       setCreatedTeamCode(code); // show code to user after creation
       setTeamForm({ name: "", description: "", industry: "", size: "", website: "" });
-      setMembers([{ email: "", role: "member" }]);
+      setMembers([{ email: "" }]);
       setShowCreateModal(false);
       setTimeout(() => setCreatedTeamCode(""), 10000); // hide code after 10s
     } finally {
@@ -115,7 +128,7 @@ export default function Team() {
       return;
     }
     // Add user as member
-    found.members = [...(found.members || []), { email: user.email, role: "member" }];
+    found.members = [...(found.members || []), { email: user.email }];
     // Update teams in storage
     const updatedTeams = allTeams.map(t => t.id === found.id ? found : t);
     localStorage.setItem("teams", JSON.stringify(updatedTeams));
@@ -231,13 +244,6 @@ export default function Team() {
                   {team.members.slice(0, 3).map((member, idx) => (
                     <p key={idx} className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       {member.email}
-                      <span className={`ml-2 px-2 py-0.5 rounded text-[10px] font-bold ${
-                        member.role === 'admin'
-                          ? darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600'
-                          : darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600'
-                      }`}>
-                        {member.role}
-                      </span>
                     </p>
                   ))}
                   {team.members.length > 3 && (
@@ -252,7 +258,7 @@ export default function Team() {
             {/* Actions */}
             <div className="flex gap-2">
               <button
-                onClick={() => navigate(`/team/${team.id}`)}
+                onClick={() => setViewingTeam(team)}
                 className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
                   darkMode
                     ? 'bg-blue-600 hover:bg-blue-700 text-white'
@@ -425,18 +431,6 @@ export default function Team() {
                     }`}
                     placeholder="email@example.com"
                   />
-                  <select
-                    value={member.role}
-                    onChange={(e) => handleMemberChange(index, "role", e.target.value)}
-                    className={`px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm ${
-                      darkMode
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'border-gray-300'
-                    }`}
-                  >
-                    <option value="member">Member</option>
-                    <option value="admin">Admin</option>
-                  </select>
                   {members.length > 1 && (
                     <button
                       onClick={() => removeMember(index)}
@@ -548,6 +542,146 @@ export default function Team() {
                 Join
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Team Details Modal */}
+      {viewingTeam && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className={`rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto ${
+            darkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  {viewingTeam.name}
+                </h2>
+                <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  {viewingTeam.description || "No description provided"}
+                </p>
+              </div>
+              <button
+                onClick={() => setViewingTeam(null)}
+                className={`text-2xl font-bold rounded-full w-10 h-10 flex items-center justify-center transition-all ${
+                  darkMode
+                    ? 'hover:bg-gray-700 text-gray-400 hover:text-white'
+                    : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Team Information */}
+              <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                <h3 className={`text-sm font-semibold mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  TEAM INFORMATION
+                </h3>
+                <div className="space-y-2 text-sm">
+                  {viewingTeam.industry && (
+                    <div className="flex justify-between">
+                      <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Industry:</span>
+                      <span className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{viewingTeam.industry}</span>
+                    </div>
+                  )}
+                  {viewingTeam.size && (
+                    <div className="flex justify-between">
+                      <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Team Size:</span>
+                      <span className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{viewingTeam.size}</span>
+                    </div>
+                  )}
+                  {viewingTeam.website && (
+                    <div className="flex justify-between">
+                      <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Website:</span>
+                      <a 
+                        href={viewingTeam.website} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="font-semibold text-blue-500 hover:text-blue-600"
+                      >
+                        {viewingTeam.website}
+                      </a>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Created:</span>
+                    <span className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      {new Date(viewingTeam.createdAt).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Team Code:</span>
+                    <span className={`font-mono font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                      {viewingTeam.code || "N/A"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Members List */}
+              <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                <h3 className={`text-sm font-semibold mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  TEAM MEMBERS ({viewingTeam.members.length})
+                </h3>
+                <div className="space-y-2">
+                  {viewingTeam.members.map((member, idx) => (
+                    <div 
+                      key={idx}
+                      className={`flex items-center justify-between p-3 rounded-lg ${
+                        darkMode ? 'bg-gray-600/50' : 'bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                          darkMode ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-100 text-blue-600'
+                        }`}>
+                          {member.email.charAt(0).toUpperCase()}
+                        </div>
+                        <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {member.email}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Owner Information */}
+              <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                <h3 className={`text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  TEAM OWNER
+                </h3>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                    darkMode ? 'bg-yellow-900/50 text-yellow-400' : 'bg-yellow-100 text-yellow-600'
+                  }`}>
+                    👑
+                  </div>
+                  <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {viewingTeam.owner === user.id 
+                      ? "You" 
+                      : allUsers.find(u => u.id === viewingTeam.owner)?.username || `User ID: ${viewingTeam.owner}`}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setViewingTeam(null)}
+              className={`mt-6 w-full py-3 rounded-lg font-semibold transition-all ${
+                darkMode
+                  ? 'bg-gray-700 hover:bg-gray-600 text-white'
+                  : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+              }`}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
