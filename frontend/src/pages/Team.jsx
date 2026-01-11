@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-// Helper to generate a unique team code
-function generateTeamCode() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
+import { getTeams, getAllTeams, createTeam, deleteTeam, joinTeam, updateTeam } from "../services/api";
 
 export default function Team() {
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
   const [teams, setTeams] = useState([]);
+  const [allTeams, setAllTeams] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -37,6 +34,7 @@ export default function Team() {
       setDarkMode(JSON.parse(savedPreferences).darkMode);
     }
     loadTeams();
+    loadAllTeams();
     loadUsers();
   }, []);
 
@@ -50,9 +48,27 @@ export default function Team() {
     }
   };
 
-  const loadTeams = () => {
-    const savedTeams = JSON.parse(localStorage.getItem("teams") || "[]");
-    setTeams(savedTeams);
+  const loadTeams = async () => {
+    try {
+      const teamsData = await getTeams();
+      setTeams(teamsData);
+      // Also sync to localStorage for offline access
+      localStorage.setItem("teams", JSON.stringify(teamsData));
+    } catch (error) {
+      console.error('Error loading teams:', error);
+      // Fallback to localStorage
+      const savedTeams = JSON.parse(localStorage.getItem("teams") || "[]");
+      setTeams(savedTeams);
+    }
+  };
+
+  const loadAllTeams = async () => {
+    try {
+      const teamsData = await getAllTeams();
+      setAllTeams(teamsData);
+    } catch (error) {
+      console.error('Error loading all teams:', error);
+    }
   };
 
   const handleTeamFormChange = (e) => {
@@ -77,65 +93,69 @@ export default function Team() {
   const handleCreateTeam = async () => {
     setLoading(true);
     try {
-      const code = generateTeamCode();
       const newTeam = {
-        id: Date.now(),
         name: teamForm.name,
         description: teamForm.description,
         industry: teamForm.industry,
         size: teamForm.size,
         website: teamForm.website,
-        owner: user.id,
-        members: members.filter(m => m.email),
-        createdAt: new Date().toISOString(),
-        code // assign unique code
+        members: members.filter(m => m.email)
       };
 
-      const allTeams = [...teams, newTeam];
-      localStorage.setItem("teams", JSON.stringify(allTeams));
-      setTeams(allTeams);
-
-      setCreatedTeamCode(code); // show code to user after creation
+      const createdTeam = await createTeam(newTeam);
+      
+      setCreatedTeamCode(createdTeam.code); // show code to user after creation
       setTeamForm({ name: "", description: "", industry: "", size: "", website: "" });
       setMembers([{ email: "" }]);
       setShowCreateModal(false);
+      
+      await loadTeams(); // Reload teams from backend
+      await loadAllTeams(); // Reload all teams
+      
+      // Émettre un événement pour que d'autres composants se mettent à jour
+      window.dispatchEvent(new CustomEvent('teamCreated'));
+      
       setTimeout(() => setCreatedTeamCode(""), 10000); // hide code after 10s
+    } catch (error) {
+      console.error('Error creating team:', error);
+      alert('Failed to create team');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteTeam = (teamId) => {
-    const filtered = teams.filter(t => t.id !== teamId);
-    localStorage.setItem("teams", JSON.stringify(filtered));
-    setTeams(filtered);
+  const handleDeleteTeam = async (teamId) => {
+    if (!window.confirm("Are you sure you want to delete this team?")) return;
+    try {
+      await deleteTeam(teamId);
+      await loadTeams(); // Reload teams from backend
+      await loadAllTeams(); // Reload all teams
+      
+      // Émettre un événement pour que d'autres composants se mettent à jour
+      window.dispatchEvent(new CustomEvent('teamDeleted'));
+    } catch (error) {
+      console.error('Error deleting team:', error);
+      alert('Failed to delete team');
+    }
   };
 
-  const handleJoinTeam = () => {
+  const handleJoinTeam = async () => {
     setJoinError("");
-    const allTeams = JSON.parse(localStorage.getItem("teams") || "[]");
-    const found = allTeams.find(t => t.code && t.code.toUpperCase() === joinCode.trim().toUpperCase());
-    if (!found) {
-      setJoinError("No team found with this code.");
-      return;
+    try {
+      await joinTeam(joinCode.trim());
+      await loadTeams(); // Reload teams from backend
+      await loadAllTeams(); // Reload all teams
+      
+      // Émettre un événement pour que d'autres composants se mettent à jour
+      window.dispatchEvent(new CustomEvent('teamJoined'));
+      
+      setShowJoinModal(false);
+      setJoinCode("");
+      setJoinError("");
+    } catch (error) {
+      console.error('Error joining team:', error);
+      setJoinError(error.message || "Failed to join team. Please check the code.");
     }
-    // Check if already a member
-    if (
-      found.owner === user.id ||
-      (found.members || []).some(m => m.email === user.email)
-    ) {
-      setJoinError("You are already a member of this team.");
-      return;
-    }
-    // Add user as member
-    found.members = [...(found.members || []), { email: user.email }];
-    // Update teams in storage
-    const updatedTeams = allTeams.map(t => t.id === found.id ? found : t);
-    localStorage.setItem("teams", JSON.stringify(updatedTeams));
-    setTeams(updatedTeams);
-    setShowJoinModal(false);
-    setJoinCode("");
-    setJoinError("");
   };
 
   const myTeams = teams.filter(t => t.owner === user.id || (t.members || []).some(m => m.email === user.email));
@@ -188,13 +208,13 @@ export default function Team() {
               : darkMode ? 'text-gray-400 border-transparent hover:text-gray-300' : 'text-gray-500 border-transparent hover:text-gray-700'
           }`}
         >
-          All Teams ({teams.length})
+          All Teams ({allTeams.length})
         </button>
       </div>
 
       {/* Teams Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-slide-up delay-200">
-        {(activeTab === "my-teams" ? myTeams : teams).map(team => (
+        {(activeTab === "my-teams" ? myTeams : allTeams).map(team => (
           <div
             key={team.id}
             className={`rounded-xl p-6 border transition-all animate-scale-up hover:shadow-lg ${
