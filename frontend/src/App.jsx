@@ -8,6 +8,10 @@ import Messages from "./pages/Messages.jsx";
 import Settings from "./pages/Settings.jsx";
 import Team from "./pages/Team.jsx";
 import TeamCreation from "./pages/TeamCreation.jsx";
+import TimeManagement from "./pages/TimeManagement.jsx";
+import Profile from "./pages/Profile.jsx";
+import NotificationPanel from "./components/NotificationPanel.jsx";
+import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification } from "./services/notificationService.js";
 import "./styles/global.css";
 
 // --- Auth Utilities ---
@@ -18,10 +22,24 @@ const isAuthenticated = () => !!getToken();
 // --- Premium Navbar Component ---
 function Navbar() {
   const location = useLocation();
-  const user = getUser();
+  const [user, setUser] = useState(getUser());
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  // Load user profile data on mount
+  useEffect(() => {
+    const currentUser = getUser();
+    const userProfiles = JSON.parse(localStorage.getItem('userProfiles') || '{}');
+    if (userProfiles[currentUser.id]) {
+      const enrichedUser = { ...currentUser, ...userProfiles[currentUser.id] };
+      setUser(enrichedUser);
+    }
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -31,7 +49,49 @@ function Navbar() {
 
   useEffect(() => {
     setMobileOpen(false);
+    setShowUserMenu(false);
   }, [location]);
+
+  // Load notifications
+  useEffect(() => {
+    const loadNotifications = () => {
+      setNotifications(getNotifications());
+      setUnreadCount(getUnreadCount());
+    };
+    
+    loadNotifications();
+    // Refresh notifications every 5 seconds
+    const interval = setInterval(loadNotifications, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Listen for profile updates
+  useEffect(() => {
+    const handleProfileUpdate = (event) => {
+      setUser(event.detail);
+    };
+    
+    window.addEventListener('userProfileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('userProfileUpdated', handleProfileUpdate);
+  }, []);
+
+  const handleMarkAsRead = (notifId) => {
+    markAsRead(notifId);
+    setNotifications(getNotifications());
+    setUnreadCount(getUnreadCount());
+  };
+
+  const handleMarkAllAsRead = () => {
+    markAllAsRead();
+    setNotifications(getNotifications());
+    setUnreadCount(getUnreadCount());
+  };
+
+  const handleDeleteNotification = (notifId) => {
+    deleteNotification(notifId);
+    setNotifications(getNotifications());
+    setUnreadCount(getUnreadCount());
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -42,10 +102,10 @@ function Navbar() {
   const navItems = [
     { path: "/", label: "Dashboard", icon: "📊", desc: "Overview & analytics" },
     { path: "/tasks", label: "Tasks", icon: "✅", desc: "Manage your work" },
+    { path: "/time-management", label: "Time", icon: "⏰", desc: "Calendar & Pomodoro" },
     { path: "/team", label: "My Teams", icon: "👫", desc: "Create & manage teams" },
     { path: "/users", label: "Members", icon: "👥", desc: "Team members" },
-    { path: "/messages", label: "Chat", icon: "💬", desc: "Team conversations" },
-    { path: "/settings", label: "Settings", icon: "⚙️", desc: "Account settings" }
+    { path: "/messages", label: "Chat", icon: "💬", desc: "Team conversations" }
   ];
 
   return (
@@ -112,6 +172,32 @@ function Navbar() {
 
             {/* Right Section */}
             <div className="flex items-center gap-3">
+              {/* Notifications Button - NEW */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative group flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-slate-100 to-slate-50 text-slate-600 hover:text-blue-600 hover:from-blue-50 hover:to-slate-50 transition-all duration-300 border border-slate-200/60 shadow-sm"
+                >
+                  <span className="text-lg">🔔</span>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-red-500 to-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-red-500/50 animate-pulse">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+                
+                {showNotifications && (
+                  <NotificationPanel
+                    notifications={notifications}
+                    onMarkAsRead={handleMarkAsRead}
+                    onMarkAllAsRead={handleMarkAllAsRead}
+                    onDelete={handleDeleteNotification}
+                    onClose={() => setShowNotifications(false)}
+                    darkMode={false}
+                  />
+                )}
+              </div>
+
               {/* Desktop User Profile - Premium */}
               <div className={`hidden lg:flex items-center gap-3 pr-4 transition-all duration-300 ${scrolled ? 'opacity-60' : 'opacity-100'}`}>
                 <div className="text-right">
@@ -120,34 +206,48 @@ function Navbar() {
                 </div>
               </div>
 
-              {/* Avatar with Dropdown Indicator */}
-              <button className="hidden lg:flex relative group items-center gap-0.5 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-500/40 hover:scale-110 transition-all duration-300 border border-blue-400/50">
-                {(user.username || 'U').charAt(0).toUpperCase()}
-                <div className="absolute inset-0 rounded-full bg-white/0 group-hover:bg-white/10 transition-colors duration-300" />
-              </button>
-
-              {/* Divider */}
-              <div className="hidden lg:block w-px h-6 bg-gradient-to-b from-transparent via-slate-300 to-transparent opacity-50" />
-
-              {/* Desktop Action Buttons - Premium */}
-              <div className="hidden lg:flex items-center gap-2">
-                <a 
-                  href="/settings"
-                  className="group flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-300 relative overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-slate-400/0 to-slate-400/0 group-hover:from-slate-400/10 group-hover:to-slate-400/5 transition-all duration-300" />
-                  <span className="relative">⚙️</span>
-                  <span className="relative hidden sm:inline">Settings</span>
-                </a>
-
+              {/* Avatar with Dropdown Menu */}
+              <div className="hidden lg:block relative">
                 <button 
-                  onClick={handleLogout}
-                  className="group flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-red-600 hover:text-white hover:bg-red-600 transition-all duration-300 relative overflow-hidden"
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="relative group flex items-center gap-0.5 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-500/40 hover:scale-110 transition-all duration-300 border border-blue-400/50"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-red-600/20 group-hover:from-red-600 group-hover:to-red-700 transition-all duration-300" />
-                  <span className="relative">🚪</span>
-                  <span className="relative hidden sm:inline">Logout</span>
+                  {(user.username || 'U').charAt(0).toUpperCase()}
+                  <div className="absolute inset-0 rounded-full bg-white/0 group-hover:bg-white/10 transition-colors duration-300" />
                 </button>
+
+                {/* User Dropdown Menu */}
+                {showUserMenu && (
+                  <div className="absolute right-0 top-12 w-48 bg-white rounded-xl shadow-2xl border border-slate-200 py-2 z-50 animate-fadeIn">
+                    <a
+                      href="/profile"
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors text-slate-700 hover:text-blue-600 font-medium"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <span className="text-lg">👤</span>
+                      <span>Profile</span>
+                    </a>
+                    <a
+                      href="/settings"
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors text-slate-700 hover:text-blue-600 font-medium"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <span className="text-lg">⚙️</span>
+                      <span>Settings</span>
+                    </a>
+                    <div className="h-px bg-slate-200 my-2"></div>
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        handleLogout();
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-red-50 transition-colors text-red-600 hover:text-red-700 font-medium"
+                    >
+                      <span className="text-lg">🚪</span>
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Mobile Menu Button - Premium */}
@@ -292,9 +392,11 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/tasks" element={<Tasks />} />
+            <Route path="/time-management" element={<TimeManagement />} />
             <Route path="/team" element={<Team />} />
             <Route path="/users" element={<Users />} />
             <Route path="/messages" element={<Messages />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/team/create" element={<TeamCreation />} />
             <Route path="*" element={<Navigate to="/" replace />} />
