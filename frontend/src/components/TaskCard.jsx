@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/taskcard.css';
 
-export default function TaskCard({ task, onStatusChange }) {
+export default function TaskCard({ task, onStatusChange, onEdit }) {
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
@@ -33,6 +33,24 @@ export default function TaskCard({ task, onStatusChange }) {
       displayDate = d.toLocaleDateString();
     }
   }
+
+  // Calculate days until due date
+  const getDaysUntilDue = () => {
+    if (!task.dueDate) return null;
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    // Parse date as local time to avoid timezone issues
+    const dateStr = String(task.dueDate).split('T')[0]; // Handle ISO strings
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const due = new Date(year, month - 1, day);
+    const diffTime = due - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const daysUntilDue = getDaysUntilDue();
+  const isUrgent = daysUntilDue !== null && daysUntilDue <= 3 && daysUntilDue >= 0;
+  const isOverdue = daysUntilDue !== null && daysUntilDue < 0;
 
   return (
     <div className={`rounded-lg p-4 border shadow-sm hover:shadow-md transition-all duration-200 cursor-grab active:cursor-grabbing group animate-scale-up ${
@@ -70,6 +88,26 @@ export default function TaskCard({ task, onStatusChange }) {
           : 'text-gray-600'
       }`}>{task.description}</p>
 
+      {/* Due Date Section with Urgency Indicator */}
+      {task.dueDate && (
+        <div className={`mb-3 px-3 py-2 rounded-md text-xs font-semibold flex items-center gap-2 ${
+          isOverdue 
+            ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border border-red-300 dark:border-red-700' 
+            : isUrgent 
+              ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300 border border-orange-300 dark:border-orange-700'
+              : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-700'
+        }`}>
+          <span>📅</span>
+          <span>Due: {(() => {
+            const dateStr = String(task.dueDate).split('T')[0];
+            const [year, month, day] = dateStr.split('-').map(Number);
+            return new Date(year, month - 1, day).toLocaleDateString();
+          })()}</span>
+          {isOverdue && <span className="ml-auto">⚠️ OVERDUE</span>}
+          {isUrgent && !isOverdue && <span className="ml-auto">⚠️ {daysUntilDue} day{daysUntilDue !== 1 ? 's' : ''} left</span>}
+        </div>
+      )}
+
       <div className={`flex items-center justify-between text-xs transition-colors ${
         darkMode
           ? 'text-gray-400'
@@ -78,6 +116,22 @@ export default function TaskCard({ task, onStatusChange }) {
         <span>👤 {task.assignedTo || 'Unassigned'}</span>
         <span>{displayDate}</span>
       </div>
+
+      {onEdit && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(task);
+          }}
+          className={`mt-3 w-full text-xs font-semibold py-2 rounded transition-all hover:scale-105 ${
+            darkMode
+              ? 'bg-blue-900/30 text-blue-400 hover:bg-blue-800/50'
+              : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+          }`}
+        >
+          ✏️ Edit Task
+        </button>
+      )}
     </div>
   );
 }
