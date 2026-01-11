@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getStats, getTasks, getMessages } from "../services/api";
+import { checkDeadlines } from "../services/notificationService";
 
 function SkeletonCard({ darkMode }) {
   return (
@@ -115,6 +116,10 @@ export default function Dashboard() {
             done: doneCount,
             percent: totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
           });
+          
+          // Check for upcoming deadlines
+          const userObj = JSON.parse(storedUser);
+          checkDeadlines(filteredTasks, userObj.id);
         }
 
         // Count messages for user's teams
