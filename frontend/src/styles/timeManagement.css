@@ -1,0 +1,789 @@
+/* Time Management Page Styles */
+
+.time-management-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.time-management-page.dark {
+  color: #f9fafb;
+}
+
+.time-header {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.time-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+
+.time-subtitle {
+  font-size: 1.1rem;
+  color: #6b7280;
+}
+
+.time-management-page.dark .time-subtitle {
+  color: #9ca3af;
+}
+
+.time-content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .time-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+.left-column,
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.section {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.time-management-page.dark .section {
+  background: #1f2937;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #111827;
+}
+
+.time-management-page.dark .section-title {
+  color: #f9fafb;
+}
+
+/* ===== CALENDAR STYLES ===== */
+
+.calendar-container {
+  width: 100%;
+}
+
+.calendar-container.dark {
+  color: #f9fafb;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 0 10px;
+}
+
+.month-year {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.calendar-container.dark .month-year {
+  color: #f9fafb;
+}
+
+.nav-btn {
+  background: #f3f4f6;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-btn:hover {
+  background: #e5e7eb;
+  transform: scale(1.05);
+}
+
+.calendar-container.dark .nav-btn {
+  background: #374151;
+}
+
+.calendar-container.dark .nav-btn:hover {
+  background: #4b5563;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.day-name {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 8px;
+  color: #6b7280;
+}
+
+.calendar-container.dark .day-name {
+  color: #9ca3af;
+}
+
+.calendar-day {
+  min-height: 100px;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 8px;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.calendar-day:hover {
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.calendar-day.dark {
+  background: #374151;
+}
+
+.calendar-day.dark:hover {
+  background: #4b5563;
+}
+
+.calendar-day.empty {
+  background: transparent;
+  cursor: default;
+}
+
+.calendar-day.empty:hover {
+  border-color: transparent;
+  transform: none;
+  box-shadow: none;
+}
+
+.calendar-day.today {
+  border-color: #3b82f6;
+  background: #dbeafe;
+}
+
+.calendar-day.today.dark {
+  background: #1e3a8a;
+}
+
+.day-number {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.calendar-day.dark .day-number {
+  color: #f9fafb;
+}
+
+.tasks-indicator {
+  margin-top: 6px;
+}
+
+.task-count {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.task-count.normal {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.task-count.urgent {
+  background: #fed7aa;
+  color: #c2410c;
+}
+
+.task-count.overdue {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.tasks-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.task-pill {
+  background: #e0e7ff;
+  color: #3730a3;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-pill:hover {
+  background: #c7d2fe;
+  transform: scale(1.02);
+}
+
+.task-pill.high {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.task-pill.medium {
+  background: #fed7aa;
+  color: #c2410c;
+}
+
+.task-pill.low {
+  background: #bbf7d0;
+  color: #166534;
+}
+
+.more-tasks {
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* ===== FILTER SECTION ===== */
+
+.filter-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.filter-btn {
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.filter-btn:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  transform: translateY(-2px);
+}
+
+.filter-btn.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.time-management-page.dark .filter-btn {
+  background: #374151;
+  border-color: #4b5563;
+  color: #f9fafb;
+}
+
+.time-management-page.dark .filter-btn:hover {
+  background: #4b5563;
+  border-color: #60a5fa;
+}
+
+.time-management-page.dark .filter-btn.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.filter-btn.urgent {
+  border-color: #f59e0b;
+}
+
+.filter-btn.urgent:hover,
+.filter-btn.urgent.active {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: white;
+}
+
+.filter-btn.overdue {
+  border-color: #ef4444;
+}
+
+.filter-btn.overdue:hover,
+.filter-btn.overdue.active {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+.filtered-tasks-list {
+  margin-top: 20px;
+}
+
+.list-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #374151;
+}
+
+.time-management-page.dark .list-title {
+  color: #d1d5db;
+}
+
+.no-tasks {
+  text-align: center;
+  padding: 40px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.tasks-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.task-item {
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.task-item:hover {
+  border-color: #3b82f6;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.task-item.dark {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+.task-item.dark:hover {
+  background: #4b5563;
+  border-color: #60a5fa;
+}
+
+.task-item.urgent {
+  border-left: 4px solid #f59e0b;
+}
+
+.task-item.overdue {
+  border-left: 4px solid #ef4444;
+}
+
+.task-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.priority-icon {
+  font-size: 1rem;
+}
+
+.task-title {
+  flex: 1;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.task-item.dark .task-title {
+  color: #f9fafb;
+}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-badge.red {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.status-badge.yellow {
+  background: #fed7aa;
+  color: #c2410c;
+}
+
+.status-badge.green {
+  background: #bbf7d0;
+  color: #166534;
+}
+
+.task-description {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.task-item.dark .task-description {
+  color: #9ca3af;
+}
+
+.task-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.task-date {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.task-item.dark .task-date {
+  color: #9ca3af;
+}
+
+.deadline-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.deadline-badge.urgent {
+  background: #fed7aa;
+  color: #c2410c;
+}
+
+.deadline-badge.overdue {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+/* ===== POMODORO TIMER STYLES ===== */
+
+.pomodoro-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.pomodoro-container.dark {
+  color: #f9fafb;
+}
+
+.timer-header {
+  text-align: center;
+  width: 100%;
+}
+
+.timer-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.sessions-count {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.pomodoro-container.dark .sessions-count {
+  color: #9ca3af;
+}
+
+.timer-display {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotate(-90deg);
+}
+
+.progress-ring-bg {
+  fill: none;
+  stroke: #e5e7eb;
+  stroke-width: 12;
+}
+
+.pomodoro-container.dark .progress-ring-bg {
+  stroke: #374151;
+}
+
+.progress-ring-progress {
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: round;
+  stroke-dasharray: 754;
+  stroke-dashoffset: 754;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.progress-ring-progress.work {
+  stroke: url(#workGradient);
+  stroke: #3b82f6;
+}
+
+.progress-ring-progress.break {
+  stroke: url(#breakGradient);
+  stroke: #10b981;
+}
+
+.time-text {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #111827;
+  z-index: 1;
+}
+
+.pomodoro-container.dark .time-text {
+  color: #f9fafb;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.control-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.control-btn.primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  min-width: 140px;
+}
+
+.control-btn.primary.active {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.control-btn.secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.pomodoro-container.dark .control-btn.secondary {
+  background: #374151;
+  color: #f9fafb;
+}
+
+.pomodoro-container.dark .control-btn.secondary:hover {
+  background: #4b5563;
+}
+
+.timer-info {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.info-box {
+  background: #f9fafb;
+  padding: 12px 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 100px;
+}
+
+.pomodoro-container.dark .info-box {
+  background: #374151;
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.pomodoro-container.dark .info-label {
+  color: #9ca3af;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.pomodoro-container.dark .info-value {
+  color: #f9fafb;
+}
+
+/* ===== MODAL STYLES ===== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content.dark {
+  background: #1f2937;
+  color: #f9fafb;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #f3f4f6;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: #e5e7eb;
+  transform: rotate(90deg);
+}
+
+.modal-content.dark .modal-close {
+  background: #374151;
+  color: #f9fafb;
+}
+
+.modal-content.dark .modal-close:hover {
+  background: #4b5563;
+}
+
+.modal-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #111827;
+}
+
+.modal-content.dark .modal-title {
+  color: #f9fafb;
+}
+
+.modal-body {
+  line-height: 1.8;
+}
+
+.modal-body p {
+  margin-bottom: 12px;
+  color: #374151;
+}
+
+.modal-content.dark .modal-body p {
+  color: #d1d5db;
+}
+
+.modal-body strong {
+  color: #111827;
+  font-weight: 700;
+}
+
+.modal-content.dark .modal-body strong {
+  color: #f9fafb;
+}
