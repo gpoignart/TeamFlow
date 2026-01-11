@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { getTasks, updateTask, createTask, deleteTask } from "../services/api";
+import { getTasks, updateTask, createTask, deleteTask, getUsers } from "../services/api";
 import TaskCard from "../components/TaskCard";
 import CreateTaskModal from "../components/CreateTaskModal";
+import { addNotification, NOTIFICATION_TYPES, checkDeadlines } from "../services/notificationService";
 import "../styles/tasks.css";
 
 export default function Tasks() {
@@ -14,6 +15,7 @@ export default function Tasks() {
   const [dragOverColumn, setDragOverColumn] = useState(null);
   const [teams, setTeams] = useState([]);
   const [selectedTeamId, setSelectedTeamId] = useState("");
+  const [editingTask, setEditingTask] = useState(null);
 
   useEffect(() => {
     const savedPreferences = localStorage.getItem("preferences");
@@ -45,7 +47,14 @@ export default function Tasks() {
     try {
       const data = await getTasks();
       // Only show tasks for the selected team, and ensure teamId is always a string for comparison
-      setTasks(Array.isArray(data) ? data.filter(t => String(t.teamId) === String(selectedTeamId)) : []);
+      const filteredTasks = Array.isArray(data) ? data.filter(t => String(t.teamId) === String(selectedTeamId)) : [];
+      setTasks(filteredTasks);
+      
+      // Check deadlines for the filtered tasks
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user && user.id) {
+        checkDeadlines(filteredTasks, user.id);
+      }
     } catch (e) {
       console.error(e);
     }
@@ -53,14 +62,53 @@ export default function Tasks() {
 
   const handleCreate = async (taskData) => {
     const user = JSON.parse(localStorage.getItem('user'));
-    // Always set teamId explicitly
+    const allTeams = JSON.parse(localStorage.getItem("teams") || "[]");
+    const selectedTeam = allTeams.find(t => String(t.id) === String(taskData.teamId));
+    
+    // Get all user IDs from the team (owner + members)
+    let allowedUserIds = [];
+    if (selectedTeam) {
+      try {
+        const allUsers = await getUsers();
+        // Add owner
+        allowedUserIds.push(String(selectedTeam.owner));
+        // Add all members
+        (selectedTeam.members || []).forEach(member => {
+          const memberUser = allUsers.find(u => u.email === member.email);
+          if (memberUser) {
+            allowedUserIds.push(String(memberUser.id));
+          }
+        });
+        // Remove duplicates
+        allowedUserIds = [...new Set(allowedUserIds)];
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        // Fallback: at least include the current user
+        allowedUserIds = [String(user.id)];
+      }
+    }
+    
     const newTask = { 
         ...taskData, 
         assignedTo: user.username,
-        userAllowedIds: [user.id],
-        teamId: selectedTeamId // ensure teamId is set
+        userAllowedIds: allowedUserIds,
+        teamId: taskData.teamId
     };
     await createTask(newTask);
+    
+    // Generate notifications for team members (except creator)
+    allowedUserIds.forEach(userId => {
+      if (String(userId) !== String(user.id)) {
+        addNotification({
+          type: NOTIFICATION_TYPES.TASK_ASSIGNED,
+          title: 'New task assigned',
+          message: `${user.username} created "${taskData.title}"`,
+          taskId: newTask.id,
+          userId: userId
+        });
+      }
+    });
+    
     // Always reload tasks after creation
     setTimeout(loadTasks, 100); // slight delay in case of async storage
   };
@@ -71,6 +119,23 @@ export default function Tasks() {
     
     try {
       await updateTask(updated);
+      
+      // Generate notification when task is completed
+      if (newStatus === 'done' && task.status !== 'done') {
+        const user = JSON.parse(localStorage.getItem('user'));
+        // Notify team members
+        (task.userAllowedIds || []).forEach(userId => {
+          if (String(userId) !== String(user.id)) {
+            addNotification({
+              type: NOTIFICATION_TYPES.TASK_COMPLETED,
+              title: 'Task completed',
+              message: `${user.username} completed "${task.title}"`,
+              taskId: task.id,
+              userId: userId
+            });
+          }
+        });
+      }
     } catch {
       setTasks(prev => prev.map(t => t.id === task.id ? task : t));
     }
@@ -80,6 +145,28 @@ export default function Tasks() {
     if (!window.confirm("Are you sure you want to delete this task?")) return;
     await deleteTask(taskId);
     loadTasks();
+  };
+
+  const handleEdit = (task) => {
+    setEditingTask(task);
+    setIsModalOpen(true);
+  };
+
+  const handleUpdate = async (taskData) => {
+    try {
+      const updatedTask = { ...editingTask, ...taskData };
+      await updateTask(updatedTask);
+      setEditingTask(null);
+      loadTasks();
+    } catch (error) {
+      console.error("Error updating task:", error);
+      alert("Failed to update task");
+    }
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditingTask(null);
   };
 
   // Drag and Drop Handlers
@@ -117,10 +204,20 @@ export default function Tasks() {
     });
   }, [tasks, q, statusFilter]);
 
+  // Function to sort tasks by priority (high -> medium -> low)
+  const sortByPriority = (tasksArray) => {
+    const priorityOrder = { high: 1, medium: 2, low: 3 };
+    return [...tasksArray].sort((a, b) => {
+      const priorityA = priorityOrder[a.priority] || 2;
+      const priorityB = priorityOrder[b.priority] || 2;
+      return priorityA - priorityB;
+    });
+  };
+
   const columns = {
-    todo: filteredTasks.filter(t => t.status === 'todo'),
-    'in-progress': filteredTasks.filter(t => t.status === 'in-progress'),
-    done: filteredTasks.filter(t => t.status === 'done'),
+    todo: sortByPriority(filteredTasks.filter(t => t.status === 'todo')),
+    'in-progress': sortByPriority(filteredTasks.filter(t => t.status === 'in-progress')),
+    done: sortByPriority(filteredTasks.filter(t => t.status === 'done')),
   };
 
   const columnConfig = [
@@ -201,7 +298,7 @@ export default function Tasks() {
                   }`}
                 >
                   <div className="relative">
-                    <TaskCard task={t} onStatusChange={handleStatusChange} />
+                    <TaskCard task={t} onStatusChange={handleStatusChange} onEdit={handleEdit} />
                     <button
                       onClick={() => handleDelete(t.id)}
                       title="Delete Task"
@@ -220,9 +317,10 @@ export default function Tasks() {
 
       <CreateTaskModal 
         isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onCreate={handleCreate} 
-        initialData={{ teamId: selectedTeamId }}
+        onClose={handleModalClose} 
+        onCreate={editingTask ? handleUpdate : handleCreate}
+        initialData={editingTask || { teamId: selectedTeamId }}
+        isEditMode={!!editingTask}
       />
     </div>
   );
