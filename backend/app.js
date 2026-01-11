@@ -13,12 +13,14 @@ const userRoutes = require('./routes/users');
 const taskRoutes = require('./routes/tasks');
 const messageRoutes = require('./routes/messages');
 const statsRoutes = require('./routes/stats');
+const teamRoutes = require('./routes/teams');
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/tasks', taskRoutes);
 app.use('/messages', messageRoutes);
 app.use('/stats', statsRoutes);
+app.use('/teams', teamRoutes);
 
 const PORT = process.env.PORT || 5000;
 
