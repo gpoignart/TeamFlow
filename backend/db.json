@@ -1,1 +1,10 @@
-
+{
+  "users": [],
+  "tasks": [],
+  "messages": [],
+  "teams": [],
+  "lastUserId": 0,
+  "lastTaskId": 0,
+  "lastMessageId": 0,
+  "lastTeamId": 0
+}
