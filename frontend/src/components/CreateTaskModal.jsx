@@ -19,13 +19,24 @@ export default function CreateTaskModal({ isOpen, onClose, onCreate, initialData
       setDarkMode(JSON.parse(savedPreferences).darkMode);
     }
     
-    // Load teams from localStorage for the team selector
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const allTeams = JSON.parse(localStorage.getItem("teams") || "[]");
-    const userTeams = allTeams.filter(
-      (t) => t.owner === user.id || (t.members || []).some((m) => m.email === user.email)
-    );
-    setTeams(userTeams);
+    // Load teams from API for the team selector
+    const loadTeams = async () => {
+      try {
+        const { getTeams } = await import('../services/api');
+        const userTeams = await getTeams();
+        setTeams(userTeams || []);
+      } catch (error) {
+        console.error('Error loading teams:', error);
+        // Fallback to localStorage
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const allTeams = JSON.parse(localStorage.getItem("teams") || "[]");
+        const userTeams = allTeams.filter(
+          (t) => t.owner === user.id || (t.members || []).some((m) => m.email === user.email)
+        );
+        setTeams(userTeams);
+      }
+    };
+    loadTeams();
 
     if (isOpen) {
       // Normalize dueDate to YYYY-MM-DD format for the date input
