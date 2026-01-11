@@ -75,7 +75,7 @@ router.post("/", authMiddleware, async (req, res) => {
         userAllowedIds: allowedUserIds,
         priority: priority || 'medium',
         dueDate: dueDate || null,
-        teamId: teamId || null
+        teamId: teamId ? (typeof teamId === 'number' ? teamId : parseInt(teamId)) : null
     });
 
     db.data.tasks.push(newTask);
@@ -104,7 +104,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
     if (userAllowedIds !== undefined) task.userAllowedIds = userAllowedIds;
     if (priority !== undefined) task.priority = priority;
     if (dueDate !== undefined) task.dueDate = dueDate;
-    if (teamId !== undefined) task.teamId = teamId; // <-- ADD THIS LINE
+    if (teamId !== undefined) task.teamId = teamId ? (typeof teamId === 'number' ? teamId : parseInt(teamId)) : null;
 
     await db.write();
     res.json(task);
