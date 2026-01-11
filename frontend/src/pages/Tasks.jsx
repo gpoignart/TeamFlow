@@ -111,6 +111,9 @@ export default function Tasks() {
     
     // Always reload tasks after creation
     setTimeout(loadTasks, 100); // slight delay in case of async storage
+    
+    // Émettre un événement pour que d'autres composants se mettent à jour
+    window.dispatchEvent(new CustomEvent('taskCreated'));
   };
 
   const handleStatusChange = async (task, newStatus) => {
@@ -145,6 +148,8 @@ export default function Tasks() {
     if (!window.confirm("Are you sure you want to delete this task?")) return;
     await deleteTask(taskId);
     loadTasks();
+    // Émettre un événement pour que d'autres composants se mettent à jour
+    window.dispatchEvent(new CustomEvent('taskDeleted', { detail: { taskId } }));
   };
 
   const handleEdit = (task) => {
@@ -158,6 +163,8 @@ export default function Tasks() {
       await updateTask(updatedTask);
       setEditingTask(null);
       loadTasks();
+      // Émettre un événement pour que d'autres composants se mettent à jour
+      window.dispatchEvent(new CustomEvent('taskUpdated'));
     } catch (error) {
       console.error("Error updating task:", error);
       alert("Failed to update task");
