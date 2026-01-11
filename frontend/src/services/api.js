@@ -61,3 +61,19 @@ export const getMessages = (teamId) =>
 export const sendMessage = (content, teamId) =>
   api("/messages", { method: "POST", body: JSON.stringify({ content, teamId }) });
 
+// Teams
+export const getTeams = (scope) => api(`/teams${scope ? `?scope=${scope}` : ""}`);
+
+export const getAllTeams = () => api("/teams?scope=all");
+
+export const createTeam = (teamData) =>
+  api("/teams", { method: "POST", body: JSON.stringify(teamData) });
+
+export const updateTeam = (teamId, teamData) =>
+  api(`/teams/${teamId}`, { method: "PUT", body: JSON.stringify(teamData) });
+
+export const deleteTeam = (teamId) =>
+  api(`/teams/${teamId}`, { method: "DELETE" });
+
+export const joinTeam = (code) =>
+  api("/teams/join", { method: "POST", body: JSON.stringify({ code }) });
